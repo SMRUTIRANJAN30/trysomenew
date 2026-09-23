@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+:root {
+  --background: #060911;
+  --foreground: #f8fafc;
+  --card-bg: rgba(13, 19, 33, 0.7);
+  --card-bg-hover: rgba(22, 32, 54, 0.85);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-border-hover: rgba(59, 130, 246, 0.4);
+  --header-bg: rgba(9, 13, 22, 0.92);
+  --header-translucent: rgba(9, 13, 22, 0.7);
+  --footer-bg: #04070d;
+  --input-bg: #090e1c;
+  --input-border: rgba(255, 255, 255, 0.12);
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --accent: #06b6d4;
+  --muted: #94a3b8;
+  --muted-text: #64748b;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"], .light {
+  --background: #ffffff;
+  --foreground: #090d16;
+  --card-bg: #f8fafc;
+  --card-bg-hover: #f1f5f9;
+  --card-border: #e2e8f0;
+  --card-border-hover: rgba(37, 99, 235, 0.4);
+  --header-bg: rgba(255, 255, 255, 0.94);
+  --header-translucent: rgba(255, 255, 255, 0.8);
+  --footer-bg: #f8fafc;
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --accent: #0891b2;
+  --muted: #475569;
+  --muted-text: #64748b;
+  --border-subtle: #e2e8f0;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Glass & Card components styled cleanly for both Bright White & Deep Dark */
+.glass {
+  background-color: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+}
+
+[data-theme="light"] .glass {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--primary);
+  color: #ffffff;
+  font-weight: 500;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.2s ease;
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--card-bg);
+  color: var(--foreground);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.2s ease;
+}
+.btn-secondary:hover {
+  border-color: var(--primary);
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

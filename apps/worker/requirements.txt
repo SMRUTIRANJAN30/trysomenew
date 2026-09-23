@@ -1,0 +1,4 @@
+celery>=5.4.0
+redis>=5.2.0
+pypdf>=5.1.0
+requests>=2.32.0
