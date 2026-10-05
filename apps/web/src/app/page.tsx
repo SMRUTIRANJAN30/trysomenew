@@ -1,402 +1,363 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  ShieldCheck,
-  Zap,
-  ArrowRight,
-  Lock,
-  Layers,
-  Split,
-  RotateCw,
-  Minimize2,
-  Image as ImageIcon,
-  ClipboardCopy,
-  Send,
+  Search,
   Sparkles,
-  ChevronDown,
-  ChevronUp,
-  FileCheck,
+  Zap,
+  ShieldCheck,
   Smartphone,
-  Cpu,
+  Gift,
+  ChevronDown,
+  Flame,
+  ArrowRight,
+  Layers,
+  Lock,
+  Clock,
   CheckCircle2,
 } from "lucide-react";
-import { GlobalFileUploader } from "@/components/upload/GlobalFileUploader";
-import { ProcessingBadge } from "@/components/common/ProcessingBadge";
-import { TOOLS } from "@/lib/toolsData";
-import { DynamicIcon } from "@/components/common/DynamicIcon";
+import { TOOLS, ToolDefinition } from "@/lib/toolsData";
+import { ToolCard } from "@/components/common/ToolCard";
+import { CategoryTabs, CategoryFilter } from "@/components/common/CategoryTabs";
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<"all" | "pdf" | "convert" | "verify" | "transfer">("all");
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<CategoryFilter>("all");
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
-  const popularTools = TOOLS.filter((t) => t.isPopular && t.status === "ready");
+  // Trigger search palette via event
+  const openSearch = () => {
+    window.dispatchEvent(new CustomEvent("toggle-command-palette"));
+  };
 
-  const filteredTools = TOOLS.filter((tool) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "pdf") return tool.category === "pdf" || tool.category === "pdf-convert" || tool.category === "pdf-edit" || tool.category === "pdf-security";
-    if (activeTab === "convert") return tool.category === "pdf-convert" || tool.category === "image";
-    if (activeTab === "verify") return tool.category === "signature-verify" || tool.category === "security-privacy";
-    if (activeTab === "transfer") return tool.category === "transfer" || tool.category === "clipboard";
-    return true;
-  });
+  // Top 8 Popular Tools placed ABOVE full grid
+  const popularTools = useMemo(() => {
+    return TOOLS.filter((t) => t.isPopular && t.status === "ready").slice(0, 8);
+  }, []);
 
-  const faqs = [
+  // Filter tools based on active category
+  const filteredTools = useMemo(() => {
+    return TOOLS.filter((tool) => {
+      if (tool.status !== "ready") return false;
+      const cat = tool.category.toLowerCase();
+
+      if (activeTab === "all") return true;
+      if (activeTab === "pdf") {
+        return cat.includes("pdf") || cat.includes("signature") || cat.includes("watermark");
+      }
+      if (activeTab === "image") {
+        return cat.includes("image") || cat.includes("svg") || cat.includes("color");
+      }
+      if (activeTab === "video") {
+        return cat.includes("video") || cat.includes("audio") || cat.includes("media") || cat.includes("gif");
+      }
+      if (activeTab === "text") {
+        return cat.includes("text") || cat.includes("ai") || cat.includes("ocr") || cat.includes("education");
+      }
+      if (activeTab === "converters") {
+        return cat.includes("convert") || cat.includes("calc") || cat.includes("qr") || cat.includes("barcode") || cat.includes("business");
+      }
+      if (activeTab === "developer") {
+        return cat.includes("developer") || cat.includes("security") || cat.includes("archive") || cat.includes("transfer") || cat.includes("clipboard");
+      }
+      return true;
+    });
+  }, [activeTab]);
+
+  // Counts for tabs
+  const categoryCounts = useMemo(() => {
+    const counts: Record<CategoryFilter, number> = {
+      all: 0,
+      pdf: 0,
+      image: 0,
+      video: 0,
+      text: 0,
+      converters: 0,
+      developer: 0,
+    };
+
+    for (const tool of TOOLS) {
+      if (tool.status !== "ready") continue;
+      counts.all++;
+      const cat = tool.category.toLowerCase();
+      if (cat.includes("pdf") || cat.includes("signature") || cat.includes("watermark")) counts.pdf++;
+      if (cat.includes("image") || cat.includes("svg") || cat.includes("color")) counts.image++;
+      if (cat.includes("video") || cat.includes("audio") || cat.includes("media") || cat.includes("gif")) counts.video++;
+      if (cat.includes("text") || cat.includes("ai") || cat.includes("ocr") || cat.includes("education")) counts.text++;
+      if (cat.includes("convert") || cat.includes("calc") || cat.includes("qr") || cat.includes("barcode") || cat.includes("business")) counts.converters++;
+      if (cat.includes("developer") || cat.includes("security") || cat.includes("archive") || cat.includes("transfer") || cat.includes("clipboard")) counts.developer++;
+    }
+
+    return counts;
+  }, []);
+
+  const popularChips = [
+    { label: "Merge PDF", href: "/pdf/merge" },
+    { label: "Compress PDF", href: "/pdf/compress" },
+    { label: "JPG to PDF", href: "/image/to-pdf" },
+    { label: "Image OCR", href: "/ocr/image" },
+    { label: "PDF Redact", href: "/pdf/redact" },
+    { label: "Invoice Generator", href: "/business/invoice" },
+    { label: "Screen Recorder", href: "/misc/screen-record" },
+  ];
+
+  const whyChooseUs = [
     {
-      q: "Does TrySomeNew upload my files to any server?",
-      a: "No! For all local tools (Merge, Split, Rotate, Compress, PDF to Image, and SHA-256 Verification), files are processed 100% inside your browser using WebAssembly and client-side memory. Your documents never leave your device.",
+      icon: <Zap className="w-6 h-6 text-amber-500" />,
+      title: "Ultra Fast",
+      desc: "Processed client-side in milliseconds using WebAssembly & modern browser engines without queue delays.",
     },
     {
-      q: "How does cryptographic document verification work?",
-      a: "TrySomeNew computes a genuine SHA-256 cryptographic digest of your file's binary stream using the native browser WebCrypto API. We issue a unique Document ID and verification record. If even a single byte or character is modified, the hash mismatches and verification will accurately fail.",
+      icon: <ShieldCheck className="w-6 h-6 text-emerald-500" />,
+      title: "Secure & Private",
+      desc: "Zero-storage guarantee. Your documents never upload to external servers and never leave your computer.",
     },
     {
-      q: "How does QuickSend and Online Clipboard work across devices?",
-      a: "Our Online Clipboard and QuickSend utilities use ephemeral rooms and peer-to-peer WebRTC channels. You scan a QR code from your phone or enter a 6-digit room code to instantly send text, links, or files directly between your desktop and mobile device without persistent cloud storage.",
+      icon: <Gift className="w-6 h-6 text-indigo-500" />,
+      title: "100% Free Forever",
+      desc: "No hidden subscriptions, no file size paywalls, and no account registration required. Just open and work.",
     },
     {
-      q: "Can I use TrySomeNew on mobile devices?",
-      a: "Yes! The platform is designed mobile-first with touch-friendly controls, responsive layout, and can be installed as a Progressive Web App (PWA) directly to your home screen.",
-    },
-    {
-      q: "Is TrySomeNew free to use?",
-      a: "Yes, all core client-side document processing tools, verification tools, clipboard, and transfers are completely free with zero ads and no required account.",
+      icon: <Smartphone className="w-6 h-6 text-blue-500" />,
+      title: "Works on Any Device",
+      desc: "Fully responsive across iOS, Android, Windows, Mac, and Linux with full Progressive Web App (PWA) support.",
     },
   ];
 
-  return (
-    <div className="w-full space-y-24">
-      {/* 1. HERO SECTION WITH SMART FILE UPLOADER */}
-      <section className="relative pt-12 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
-        {/* Subtle background glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
+  const faqs = [
+    {
+      q: "Is trysomenew completely free without hidden limits?",
+      a: "Yes! Every single tool on trysomenew is 100% free with no watermarks, no registration, and no hidden file size paywalls.",
+    },
+    {
+      q: "Are my sensitive files uploaded to your servers?",
+      a: "No. Unlike legacy cloud converters, trysomenew runs operations directly inside your browser memory using WebAssembly, Canvas, and WebCrypto. Your files never leave your device.",
+    },
+    {
+      q: "How does the Image and PDF OCR work?",
+      a: "We execute a compiled WebAssembly optical character recognition pipeline inside your browser that scans images or PDF pages and pulls text streams locally in seconds.",
+    },
+    {
+      q: "Can I use trysomenew offline on mobile or desktop?",
+      a: "Yes! trysomenew is engineered as a modern Progressive Web App (PWA). You can install it to your home screen or desktop dock and access tools offline without an internet connection.",
+    },
+    {
+      q: "How does cryptographic document verification work?",
+      a: "TrySomeNew computes a genuine SHA-256 cryptographic digest of your file's binary stream using the native browser WebCrypto API. If even a single byte is altered, verification fails immediately.",
+    },
+  ];
 
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--card-bg)] border border-[var(--border-subtle)] text-xs font-medium text-[var(--muted)] backdrop-blur-sm shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+  // FAQ Schema for SEO rich results
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: f.a,
+      },
+    })),
+  };
+
+  return (
+    <div className="w-full">
+      {/* FAQ JSON-LD Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      {/* 1. HERO SECTION (80px top/bottom padding, max 1200px) */}
+      <section className="relative py-16 sm:py-20 px-4 sm:px-6 max-w-[1200px] mx-auto text-center">
+        {/* Subtle decorative aura */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[300px] bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none -z-10" />
+
+        <div className="max-w-3xl mx-auto space-y-5">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--bg-card)] border border-[var(--border-card)] text-xs font-semibold text-[var(--text-muted)] shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-[#4F46E5]" />
             <span>Fast, Private, Zero-Cloud Document Workspace</span>
-            <span className="text-[var(--muted-text)]">•</span>
-            <span className="text-blue-500 font-semibold">trysomenew</span>
+            <span className="text-[var(--text-muted)]">•</span>
+            <span className="text-[#4F46E5] font-bold">177+ Tools</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[var(--foreground)] leading-tight">
-            Everything you need for <br />
-            <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 bg-clip-text text-transparent">
-              documents & files.
+          <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-extrabold tracking-tight text-[var(--text-main)] leading-[1.15]">
+            Free Online Tools to <br className="hidden sm:inline" />
+            <span className="bg-gradient-to-r from-[#4F46E5] via-[#7C3AED] to-[#F97316] bg-clip-text text-transparent">
+              Convert, Compress and Edit Files
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg text-[var(--muted)] leading-relaxed">
-            Convert. Edit. Sign. Verify. Analyze. And move files seamlessly between your devices in seconds.
+          <p className="text-base sm:text-lg text-[var(--text-muted)] leading-relaxed max-w-2xl mx-auto font-medium">
+            177+ fast, secure tools. No signup. Files processed locally in your browser.
           </p>
 
-          <div className="flex items-center justify-center gap-3 pt-2">
-            <ProcessingBadge mode="local" />
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[var(--card-bg)] text-[var(--muted)] border border-[var(--border-subtle)]">
-              <Zap className="w-3.5 h-3.5 text-amber-500" />
-              <span>Instant Client-Side Execution</span>
+          {/* HUGE SEARCH BAR (720px max width, 60px height, rounded-2xl) */}
+          <div className="pt-4 max-w-[720px] mx-auto">
+            <button
+              onClick={openSearch}
+              className="w-full h-[60px] px-5 rounded-2xl bg-[var(--bg-card)] border-2 border-[var(--border-card)] hover:border-[#4F46E5] text-[var(--text-muted)] flex items-center justify-between shadow-lg shadow-black/5 hover:shadow-indigo-500/10 transition-all duration-200 cursor-pointer group"
+            >
+              <div className="flex items-center gap-3.5">
+                <Search className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[#4F46E5] transition-colors" />
+                <span className="text-sm sm:text-base font-medium">
+                  Search 177+ tools... e.g. image to pdf, reduce size
+                </span>
+              </div>
+              <kbd className="hidden sm:flex items-center justify-center h-7 px-2.5 rounded-lg bg-black/5 dark:bg-white/10 border border-[var(--border-card)] font-mono text-xs text-[var(--text-main)] group-hover:border-[#4F46E5] transition-colors">
+                /
+              </kbd>
+            </button>
+
+            {/* Popular quick chips */}
+            <div className="pt-4 flex items-center justify-center flex-wrap gap-2 text-xs">
+              <span className="text-[var(--text-muted)] font-semibold mr-1">Popular:</span>
+              {popularChips.map((chip) => (
+                <Link
+                  key={chip.href}
+                  href={chip.href}
+                  className="px-3 py-1.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-card)] text-[var(--text-main)] hover:border-[#4F46E5] hover:text-[#4F46E5] font-medium transition-colors shadow-2xs"
+                >
+                  {chip.label}
+                </Link>
+              ))}
             </div>
           </div>
         </div>
-
-        {/* Global Smart File Uploader */}
-        <div className="mt-10 max-w-3xl mx-auto">
-          <GlobalFileUploader />
-        </div>
       </section>
 
-      {/* 2. POPULAR TOOLS SHOWCASE */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--foreground)]">
-              Popular Document Tools
-            </h2>
-            <p className="text-sm text-[var(--muted-text)] mt-1">
-              Tested, production-grade tools running directly in your browser.
-            </p>
-          </div>
-          <Link
-            href="/tools"
-            className="text-xs font-semibold text-blue-500 hover:text-blue-600 flex items-center gap-1 transition-colors"
-          >
-            <span>View all 20+ tools</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+      {/* 2. CATEGORY TABS (Sticky below header) */}
+      <CategoryTabs activeTab={activeTab} onChange={setActiveTab} counts={categoryCounts} />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {popularTools.map((tool) => (
-            <Link
-              key={tool.id}
-              href={tool.href}
-              className="group p-5 bg-[var(--card-bg)] hover:bg-[var(--card-bg-hover)] border border-[var(--card-border)] hover:border-blue-500/50 rounded-2xl transition-all duration-200 flex flex-col justify-between shadow-sm hover:shadow-md hover:-translate-y-0.5"
-            >
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all">
-                  <DynamicIcon name={tool.iconName} className="w-5 h-5" />
+      {/* 3. MAIN CONTENT CONTAINER (max 1200px, 24px padding) */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-12 space-y-16">
+        {/* 4. MOST POPULAR TOOLS (Top 8 above full grid) */}
+        {activeTab === "all" && (
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                  <Flame size={18} className="fill-amber-500" />
                 </div>
-                <h3 className="text-base font-bold text-[var(--foreground)] group-hover:text-blue-500 transition-colors">
-                  {tool.name}
-                </h3>
-                <p className="text-xs text-[var(--muted-text)] mt-2 leading-relaxed">
-                  {tool.description}
-                </p>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)]">
+                    Most Popular Tools
+                  </h2>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    Quick access to our highest-trafficked productivity utilities.
+                  </p>
+                </div>
               </div>
+            </div>
 
-              <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs">
-                <span className="text-[11px] font-medium text-emerald-500 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Local Engine</span>
-                </span>
-                <span className="text-[var(--muted-text)] group-hover:text-blue-500 flex items-center gap-1 font-medium transition-colors">
-                  <span>Open tool</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+            {/* 4 Columns Desktop, 2 Tablet, 1 Mobile, Gap 20px */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {popularTools.map((tool) => (
+                <ToolCard key={tool.id} tool={tool} />
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* 3. CATEGORY EXPLORER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--foreground)]">
-            Organized Product Suites
-          </h2>
-          <p className="text-sm text-[var(--muted-text)] mt-2">
-            No endless unorganized buttons. Find what you need by product workflow.
-          </p>
+        {/* 5. FULL CATEGORY TOOL GRID (4 cols desktop, 2 cols tablet, 1-2 mobile, gap 20px) */}
+        <section className="space-y-6">
+          <div className="flex items-center justify-between border-b border-[var(--border-card)] pb-4">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)]">
+                {activeTab === "all" ? "All Online Tools" : `${activeTab.toUpperCase()} Tools`}
+              </h2>
+              <p className="text-xs text-[var(--text-muted)]">
+                Showing {filteredTools.length} tools ready to use locally.
+              </p>
+            </div>
+            <button
+              onClick={openSearch}
+              className="text-xs font-bold text-[#4F46E5] hover:underline flex items-center gap-1"
+            >
+              <span>Instant Search</span>
+              <Search size={13} />
+            </button>
+          </div>
 
-          {/* Category Tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
-            {[
-              { id: "all", label: "All Suites" },
-              { id: "pdf", label: "PDF Tools" },
-              { id: "convert", label: "Conversion" },
-              { id: "verify", label: "Verification" },
-              { id: "transfer", label: "Devices & Sync" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  activeTab === tab.id
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                    : "bg-[var(--card-bg)] text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--card-bg-hover)] border border-[var(--card-border)]"
-                }`}
-              >
-                {tab.label}
-              </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {filteredTools.map((tool) => (
+              <ToolCard key={tool.id} tool={tool} />
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTools.map((tool) => (
-            <Link
-              key={tool.id}
-              href={tool.status === "ready" ? tool.href : "/tools#" + tool.category}
-              className={`p-5 rounded-2xl border transition-all ${
-                tool.status === "ready"
-                  ? "bg-[var(--card-bg)] border-[var(--card-border)] hover:border-blue-500/40 hover:bg-[var(--card-bg-hover)] shadow-sm"
-                  : "bg-[var(--card-bg)]/60 border-[var(--border-subtle)] opacity-75"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-                  <DynamicIcon name={tool.iconName} className="w-4 h-4" />
-                </div>
-                {tool.status === "ready" ? (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 font-semibold border border-emerald-500/30">
-                    Ready
-                  </span>
-                ) : (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[var(--muted-text)] font-semibold border border-[var(--border-subtle)]">
-                    Roadmap Phase 2
-                  </span>
-                )}
-              </div>
-              <h4 className="text-base font-bold text-[var(--foreground)] mt-3">{tool.name}</h4>
-              <p className="text-xs text-[var(--muted-text)] mt-1 leading-relaxed">{tool.description}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 4. DIFFERENTIATOR SPOTLIGHT: CRYPTOGRAPHIC VERIFICATION & CROSS-DEVICE */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Card 1: Cryptographic Verification */}
-          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-8 sm:p-10 relative overflow-hidden flex flex-col justify-between shadow-sm">
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <h3 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">
-                Authentic Cryptographic Verification
-              </h3>
-              <p className="text-sm text-[var(--muted)] leading-relaxed">
-                Never trust a simple green checkmark. TrySomeNew computes a genuine SHA-256 integrity hash of document streams and maintains a verifiable receipt registry. Detect tampering or byte modification instantly.
-              </p>
-
-              <div className="bg-black/5 dark:bg-black/40 rounded-xl p-4 border border-[var(--border-subtle)] font-mono text-xs space-y-1.5 text-[var(--foreground)]">
-                <div className="text-[var(--muted-text)] flex justify-between">
-                  <span>Document ID:</span>
-                  <span className="text-cyan-500 dark:text-cyan-400 font-semibold">DOC-2026-A82F91</span>
-                </div>
-                <div className="text-[var(--muted-text)] flex justify-between">
-                  <span>Integrity Status:</span>
-                  <span className="text-emerald-500 font-semibold">UNCHANGED ✓</span>
-                </div>
-                <div className="text-[var(--muted-text)] flex justify-between">
-                  <span>Algorithm:</span>
-                  <span className="text-[var(--foreground)]">SHA-256 (256-bit digest)</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-6">
-              <Link
-                href="/verify"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors shadow-lg shadow-emerald-600/20"
-              >
-                <span>Verify or Register a Document</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+        {/* 6. WHY CHOOSE US - 4 ICON BLOCKS */}
+        <section className="pt-8 border-t border-[var(--border-card)] space-y-8">
+          <div className="text-center max-w-xl mx-auto space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-main)]">
+              Why Choose trysomenew?
+            </h2>
+            <p className="text-sm text-[var(--text-muted)]">
+              Designed from the ground up for speed, privacy, and zero compromise.
+            </p>
           </div>
 
-          {/* Card 2: QuickSend Cross-Device & Online Clipboard */}
-          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-8 sm:p-10 relative overflow-hidden flex flex-col justify-between shadow-sm">
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center">
-                <Smartphone className="w-6 h-6" />
-              </div>
-              <h3 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">
-                Cross-Device Clipboard & Transfer
-              </h3>
-              <p className="text-sm text-[var(--muted)] leading-relaxed">
-                Connect your laptop, phone, and tablet instantly with a 6-digit room code or QR scan. Share text snippets, links, and documents peer-to-peer without messaging yourself on chat apps.
-              </p>
-
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <Link
-                  href="/clipboard"
-                  className="p-3 bg-black/5 dark:bg-black/40 border border-[var(--border-subtle)] rounded-xl hover:border-blue-500/40 transition-colors"
-                >
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[var(--foreground)]">
-                    <ClipboardCopy className="w-4 h-4 text-blue-500" />
-                    <span>Online Clipboard</span>
-                  </div>
-                  <p className="text-[11px] text-[var(--muted-text)] mt-1">Realtime text sync</p>
-                </Link>
-                <Link
-                  href="/transfer"
-                  className="p-3 bg-black/5 dark:bg-black/40 border border-[var(--border-subtle)] rounded-xl hover:border-blue-500/40 transition-colors"
-                >
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[var(--foreground)]">
-                    <Send className="w-4 h-4 text-cyan-500" />
-                    <span>QuickSend P2P</span>
-                  </div>
-                  <p className="text-[11px] text-[var(--muted-text)] mt-1">Zero cloud storage</p>
-                </Link>
-              </div>
-            </div>
-
-            <div className="pt-6">
-              <Link
-                href="/transfer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors shadow-lg shadow-blue-600/20"
-              >
-                <span>Launch QuickSend Room</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. PRIVACY & LOCAL-FIRST SECURITY ARCHITECTURE */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-8 sm:p-12 text-center max-w-4xl mx-auto space-y-6 shadow-sm">
-          <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center mx-auto">
-            <Lock className="w-7 h-7" />
-          </div>
-
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)]">
-            Privacy-First Architecture by Design
-          </h2>
-
-          <p className="text-sm sm:text-base text-[var(--muted)] leading-relaxed max-w-2xl mx-auto">
-            Traditional document tools upload your sensitive contracts, tax records, and medical files to third-party cloud servers. TrySomeNew was engineered from scratch with a local-first browser runtime.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left pt-4">
-            <div className="bg-black/5 dark:bg-black/30 border border-[var(--border-subtle)] p-4 rounded-xl">
-              <div className="text-emerald-500 text-xs font-bold mb-1">01 / Zero Server Upload</div>
-              <p className="text-xs text-[var(--muted-text)] leading-relaxed">
-                PDF merging, splitting, rotation, and compression run purely in your device&apos;s WebAssembly & memory.
-              </p>
-            </div>
-            <div className="bg-black/5 dark:bg-black/30 border border-[var(--border-subtle)] p-4 rounded-xl">
-              <div className="text-blue-500 text-xs font-bold mb-1">02 / Cryptographic Integrity</div>
-              <p className="text-xs text-[var(--muted-text)] leading-relaxed">
-                Standard NIST SHA-256 hashing verifies document purity without storing file contents.
-              </p>
-            </div>
-            <div className="bg-black/5 dark:bg-black/30 border border-[var(--border-subtle)] p-4 rounded-xl">
-              <div className="text-indigo-500 text-xs font-bold mb-1">03 / Ephemeral P2P Transfer</div>
-              <p className="text-xs text-[var(--muted-text)] leading-relaxed">
-                QuickSend rooms create direct browser connections. No permanent file backups stored.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. INTERACTIVE FAQ ACCORDION */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--foreground)]">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-sm text-[var(--muted-text)] mt-2">
-            Clear, honest answers about our technology and privacy model.
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          {faqs.map((faq, index) => {
-            const isOpen = openFaq === index;
-            return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {whyChooseUs.map((item, idx) => (
               <div
-                key={index}
-                className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl overflow-hidden transition-all shadow-sm"
+                key={idx}
+                className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] space-y-3 shadow-xs hover:border-[#4F46E5]/40 transition-colors"
               >
-                <button
-                  onClick={() => setOpenFaq(isOpen ? null : index)}
-                  className="w-full p-5 text-left flex items-center justify-between gap-4 text-[var(--foreground)] font-semibold text-sm hover:text-blue-500 transition-colors cursor-pointer"
-                >
-                  <span>{faq.q}</span>
-                  {isOpen ? (
-                    <ChevronUp className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-[var(--muted-text)] flex-shrink-0" />
-                  )}
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-5 text-xs text-[var(--muted)] leading-relaxed border-t border-[var(--border-subtle)] pt-3 animate-in fade-in duration-150">
-                    {faq.a}
-                  </div>
-                )}
+                <div className="w-12 h-12 rounded-xl bg-[var(--bg-section)] border border-[var(--border-card)] flex items-center justify-center">
+                  {item.icon}
+                </div>
+                <h3 className="text-base font-bold text-[var(--text-main)]">{item.title}</h3>
+                <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
-            );
-          })}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+
+        {/* 7. FREQUENTLY ASKED QUESTIONS (Accordion with Schema) */}
+        <section className="pt-8 border-t border-[var(--border-card)] max-w-3xl mx-auto space-y-6">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-main)]">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-sm text-[var(--text-muted)]">
+              Everything you need to know about our local-first tool suite.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {faqs.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] overflow-hidden transition-colors"
+                >
+                  <button
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="w-full px-5 py-4 text-left font-bold text-sm sm:text-base text-[var(--text-main)] flex items-center justify-between gap-4 cursor-pointer hover:text-[#4F46E5] transition-colors"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown
+                      size={18}
+                      className={`text-[var(--text-muted)] shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-180 text-[#4F46E5]" : ""
+                      }`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="px-5 pb-4 text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed border-t border-[var(--border-card)]/50 pt-3 animate-in fade-in duration-150">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

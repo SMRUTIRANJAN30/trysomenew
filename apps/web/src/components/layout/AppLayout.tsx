@@ -1,19 +1,46 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { MobileNav } from "./MobileNav";
 import { CommandPalette } from "./CommandPalette";
+import { TOOLS } from "@/lib/toolsData";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleToggle = () => setIsCommandPaletteOpen((prev) => !prev);
     window.addEventListener("toggle-command-palette", handleToggle);
     return () => window.removeEventListener("toggle-command-palette", handleToggle);
   }, []);
+
+  useEffect(() => {
+    if (!pathname) return;
+    if (pathname === "/") {
+      document.title = "trysomenew — One Fast Workspace for Documents, Files & Devices";
+      return;
+    }
+    if (pathname === "/tools") {
+      document.title = "Tools Directory — 170+ Document & Productivity Tools | trysomenew";
+      return;
+    }
+    if (pathname === "/roadmap") {
+      document.title = "Platform Roadmap & Phase 3 Live — trysomenew";
+      return;
+    }
+    if (pathname === "/about") {
+      document.title = "About Architect Smrutiranjan Sahoo — trysomenew";
+      return;
+    }
+    const tool = TOOLS.find((t) => t.href === pathname);
+    if (tool) {
+      document.title = `${tool.name} — Free Online Privacy-First Tool | trysomenew`;
+    }
+  }, [pathname]);
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] selection:bg-blue-500/30 selection:text-blue-500 transition-colors duration-200">

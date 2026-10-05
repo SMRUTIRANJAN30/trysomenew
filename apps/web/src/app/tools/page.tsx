@@ -41,63 +41,7 @@ const POPULAR_CATEGORIES = [
   { id: "video", label: "Video", emoji: "🎬" },
 ];
 
-function ToolCard({ tool }: { tool: ToolDefinition }) {
-  const isReady = tool.status === "ready";
-
-  const hasExts = (tool.inputExtensions && tool.inputExtensions.length > 0) || (tool.outputExtensions && tool.outputExtensions.length > 0);
-  const inExts = tool.inputExtensions?.filter(e => e !== "*").slice(0, 3).map(e => e.toUpperCase()).join(", ");
-  const outExts = tool.outputExtensions?.filter(e => e !== "*").slice(0, 2).map(e => e.toUpperCase()).join(", ");
-
-  return (
-    <Link
-      href={isReady ? tool.href : "#"}
-      className={`group relative flex flex-col gap-2 p-4 rounded-2xl border transition-all duration-200 select-none ${
-        isReady
-          ? "bg-[var(--card-bg)] border-[var(--card-border)] hover:bg-[var(--card-bg-hover)] hover:border-blue-500/40 hover:shadow-md cursor-pointer"
-          : "bg-[var(--card-bg)]/40 border-dashed border-[var(--border-subtle)] cursor-not-allowed opacity-50"
-      }`}
-      onClick={e => { if (!isReady) e.preventDefault(); }}
-      title={isReady ? tool.description : `Coming Soon: ${tool.description}`}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className={`p-2 rounded-xl transition-colors ${isReady ? "bg-blue-500/10 text-blue-500 dark:text-blue-400 group-hover:scale-105" : "bg-black/5 dark:bg-white/5 text-slate-400"}`}>
-          <DynamicIcon name={tool.iconName} size={16} />
-        </div>
-        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1 ${
-          isReady ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 font-semibold" : "text-slate-500 bg-black/5 dark:bg-white/5"
-        }`}>
-          {isReady ? <><CheckCircle2 size={9} />Live</> : <><Clock size={9} />Soon</>}
-        </span>
-      </div>
-
-      <div>
-        <h3 className={`text-sm font-semibold leading-tight transition-colors ${isReady ? "text-[var(--foreground)] group-hover:text-blue-500" : "text-[var(--muted)]"}`}>
-          {tool.name}
-        </h3>
-        <p className="text-xs text-[var(--muted-text)] mt-1 line-clamp-2 leading-relaxed">
-          {tool.description}
-        </p>
-      </div>
-
-      {/* Extension Badges */}
-      {hasExts && (
-        <div className="mt-auto pt-2.5 flex items-center gap-1 text-[9px] font-mono text-[var(--muted-text)] border-t border-[var(--border-subtle)] truncate">
-          {inExts && <span className="bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded text-[var(--foreground)] font-medium">{inExts}</span>}
-          {outExts && (
-            <>
-              <span className="text-slate-400">→</span>
-              <span className="bg-blue-500/10 text-blue-500 dark:text-blue-300 px-1.5 py-0.5 rounded font-medium">{outExts}</span>
-            </>
-          )}
-        </div>
-      )}
-
-      {tool.isLocal && isReady && !hasExts && (
-        <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium mt-auto">🔒 100% Local</span>
-      )}
-    </Link>
-  );
-}
+import { ToolCard } from "@/components/common/ToolCard";
 
 export default function ToolsDirectoryPage() {
   const [search, setSearch] = useState("");
@@ -370,7 +314,7 @@ export default function ToolsDirectoryPage() {
       {/* Tool Grid */}
       {search.trim() || activeExtension || !grouped ? (
         // Flat grid
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {filtered.map(t => <ToolCard key={t.id} tool={t} />)}
         </div>
       ) : (
@@ -385,7 +329,7 @@ export default function ToolsDirectoryPage() {
                 <div className="flex-1 h-px bg-[var(--border-subtle)]" />
                 <span className="text-xs text-[var(--muted-text)]">{tools.filter(t => t.status === "ready").length}/{tools.length} live</span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {tools.map(t => <ToolCard key={t.id} tool={t} />)}
               </div>
             </div>

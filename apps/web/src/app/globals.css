@@ -1,49 +1,90 @@
 @import "tailwindcss";
 
 :root {
-  --background: #060911;
-  --foreground: #f8fafc;
-  --card-bg: rgba(13, 19, 33, 0.7);
-  --card-bg-hover: rgba(22, 32, 54, 0.85);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --card-border-hover: rgba(59, 130, 246, 0.4);
-  --header-bg: rgba(9, 13, 22, 0.92);
-  --header-translucent: rgba(9, 13, 22, 0.7);
-  --footer-bg: #04070d;
-  --input-bg: #090e1c;
-  --input-border: rgba(255, 255, 255, 0.12);
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --accent: #06b6d4;
-  --muted: #94a3b8;
-  --muted-text: #64748b;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-}
-
-[data-theme="light"], .light {
-  --background: #ffffff;
-  --foreground: #090d16;
-  --card-bg: #f8fafc;
-  --card-bg-hover: #f1f5f9;
-  --card-border: #e2e8f0;
-  --card-border-hover: rgba(37, 99, 235, 0.4);
-  --header-bg: rgba(255, 255, 255, 0.94);
-  --header-translucent: rgba(255, 255, 255, 0.8);
+  /* LIGHT MODE (Default fallback / defined variables) */
+  --bg-main: #ffffff;
+  --bg-section: #f8fafc;
+  --bg-card: #ffffff;
+  --border-card: #e2e8f0;
+  --border-card-hover: #4f46e5;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --header-bg: rgba(255, 255, 255, 0.85);
   --footer-bg: #f8fafc;
   --input-bg: #ffffff;
   --input-border: #cbd5e1;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --accent: #0891b2;
-  --muted: #475569;
-  --muted-text: #64748b;
-  --border-subtle: #e2e8f0;
+
+  /* BRAND & ACCENTS */
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-tint: rgba(79, 70, 229, 0.08);
+  --accent-cta: #f97316;
+  --accent-cta-hover: #ea580c;
+  
+  /* SYSTEM STATUS */
+  --success: #16a34a;
+  --error: #dc2626;
+  --warning: #f59e0b;
+
+  /* CATEGORY TINT COLORS */
+  --cat-pdf: #ef4444;
+  --cat-pdf-bg: rgba(239, 68, 68, 0.1);
+  --cat-image: #10b981;
+  --cat-image-bg: rgba(16, 185, 129, 0.1);
+  --cat-video: #8b5cf6;
+  --cat-video-bg: rgba(139, 92, 246, 0.1);
+  --cat-text: #3b82f6;
+  --cat-text-bg: rgba(59, 130, 246, 0.1);
+  --cat-convert: #f97316;
+  --cat-convert-bg: rgba(249, 115, 22, 0.1);
+  --cat-dev: #475569;
+  --cat-dev-bg: rgba(71, 85, 105, 0.1);
+
+  /* BORDER RADIUS TOKENS */
+  --radius-card: 16px;
+  --radius-btn: 12px;
+  --radius-input: 12px;
+
+  /* COMPATIBILITY ALIASES */
+  --background: var(--bg-main);
+  --foreground: var(--text-main);
+  --card-bg: var(--bg-card);
+  --card-border: var(--border-card);
+  --muted: var(--text-muted);
+  --muted-text: var(--text-muted);
+  --border-subtle: var(--border-card);
+}
+
+[data-theme="dark"], .dark {
+  /* DARK MODE */
+  --bg-main: #0b1020;
+  --bg-section: #0f1629;
+  --bg-card: #131a2e;
+  --border-card: #243049;
+  --border-card-hover: #6366f1;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --header-bg: rgba(11, 16, 32, 0.85);
+  --footer-bg: #090d1a;
+  --input-bg: #131a2e;
+  --input-border: #243049;
+
+  --primary-tint: rgba(99, 102, 241, 0.15);
+
+  /* COMPATIBILITY ALIASES */
+  --background: var(--bg-main);
+  --foreground: var(--text-main);
+  --card-bg: var(--bg-card);
+  --card-border: var(--border-card);
+  --muted: var(--text-muted);
+  --muted-text: var(--text-muted);
+  --border-subtle: var(--border-card);
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
   overflow-x: hidden;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -51,42 +92,89 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Glass & Card components styled cleanly for both Bright White & Deep Dark */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading, var(--font-inter, sans-serif));
+}
+
+/* Glass & Card components styled with soft shadows & 16px radius */
+.card-tool {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-tool:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-card-hover);
+  box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.08), 0 8px 10px -6px rgba(79, 70, 229, 0.04);
+}
+
 .glass {
-  background-color: var(--card-bg);
+  background-color: var(--bg-card);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--card-border);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
 }
 
-[data-theme="light"] .glass {
-  background-color: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
-}
-
-/* Buttons */
+/* Main Action Buttons (12px radius) */
 .btn-primary {
   background-color: var(--primary);
   color: #ffffff;
-  font-weight: 500;
-  border-radius: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-btn);
   padding: 0.625rem 1.25rem;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 .btn-primary:hover {
   background-color: var(--primary-hover);
+  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.35);
+}
+
+/* Orange Accent CTA Button (Used exclusively for primary tool dropzone action) */
+.btn-cta {
+  background-color: var(--accent-cta);
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: var(--radius-btn);
+  height: 56px;
+  padding: 0 2rem;
+  font-size: 1.05rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  box-shadow: 0 4px 14px 0 rgba(249, 115, 22, 0.35);
+}
+.btn-cta:hover {
+  background-color: var(--accent-cta-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px 0 rgba(249, 115, 22, 0.45);
 }
 
 .btn-secondary {
-  background-color: var(--card-bg);
-  color: var(--foreground);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.75rem;
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-btn);
   padding: 0.625rem 1.25rem;
+  font-weight: 500;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 .btn-secondary:hover {
   border-color: var(--primary);
+  background-color: var(--primary-tint);
 }
 
 /* Custom subtle scrollbars */
@@ -98,20 +186,24 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.25);
+  background: rgba(148, 163, 184, 0.3);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.45);
+  background: rgba(148, 163, 184, 0.5);
 }
 
-/* Focus styles */
+/* Accessibility focus ring */
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* Reduced motion accessibility */
+/* Smooth mobile tap highlights */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

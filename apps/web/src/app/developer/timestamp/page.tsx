@@ -17,6 +17,27 @@ const ZONES: Zone[] = [
   { label: "Sydney (AEST)", tz: "Australia/Sydney" },
 ];
 
+interface RowProps {
+  label: string;
+  value: string;
+  isCopied: boolean;
+  onCopy: (val: string, label: string) => void;
+}
+
+function TimestampRow({ label, value, isCopied, onCopy }: RowProps) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+      <span className="text-sm text-gray-500">{label}</span>
+      <div className="flex items-center gap-2">
+        <code className="text-sm text-gray-200">{value}</code>
+        <button onClick={() => onCopy(value, label)} className="text-gray-500 hover:text-white transition-colors">
+          {isCopied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function TimestampConverterPage() {
   const [unix, setUnix] = useState(Math.floor(Date.now() / 1000).toString());
   const [humanInput, setHumanInput] = useState(new Date().toISOString().slice(0, 16));
@@ -42,18 +63,6 @@ export default function TimestampConverterPage() {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const Row = ({ label, value }: { label: string; value: string }) => (
-    <div className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <div className="flex items-center gap-2">
-        <code className="text-sm text-gray-200">{value}</code>
-        <button onClick={() => copy(value, label)} className="text-gray-500 hover:text-white transition-colors">
-          {copied === label ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
-        </button>
-      </div>
-    </div>
-  );
-
   return (
     <ToolShell title="Timestamp Converter" description="Convert Unix timestamps to human-readable dates and vice versa. Check time zones globally.">
       <div className="space-y-6">
@@ -74,12 +83,12 @@ export default function TimestampConverterPage() {
 
           {isValid && (
             <div className="rounded-xl bg-white/5 p-4 space-y-1">
-              <Row label="ISO 8601" value={date.toISOString()} />
-              <Row label="UTC" value={date.toUTCString()} />
-              <Row label="Local" value={date.toLocaleString()} />
-              <Row label="Date" value={date.toDateString()} />
-              <Row label="Milliseconds" value={(ts * 1000).toString()} />
-              <Row label="Nanoseconds" value={(ts * 1_000_000_000).toFixed(0)} />
+              <TimestampRow label="ISO 8601" value={date.toISOString()} isCopied={copied === "ISO 8601"} onCopy={copy} />
+              <TimestampRow label="UTC" value={date.toUTCString()} isCopied={copied === "UTC"} onCopy={copy} />
+              <TimestampRow label="Local" value={date.toLocaleString()} isCopied={copied === "Local"} onCopy={copy} />
+              <TimestampRow label="Date" value={date.toDateString()} isCopied={copied === "Date"} onCopy={copy} />
+              <TimestampRow label="Milliseconds" value={(ts * 1000).toString()} isCopied={copied === "Milliseconds"} onCopy={copy} />
+              <TimestampRow label="Nanoseconds" value={(ts * 1_000_000_000).toFixed(0)} isCopied={copied === "Nanoseconds"} onCopy={copy} />
             </div>
           )}
         </div>

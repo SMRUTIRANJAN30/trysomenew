@@ -9,6 +9,20 @@ const DIGITS = "0123456789";
 const SYMBOLS = "!@#$%^&*()_+-=[]{}|;:,.<>?";
 const SIMILAR = "0O1lI";
 
+function Option({ label, state, setter }: { label: string; state: boolean; setter: (v: boolean) => void }) {
+  return (
+    <label className="flex items-center gap-2 cursor-pointer select-none">
+      <div
+        className={`w-10 h-5 rounded-full transition-colors relative ${state ? "bg-blue-600" : "bg-white/10"}`}
+        onClick={() => setter(!state)}
+      >
+        <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${state ? "translate-x-5" : "translate-x-0"}`} />
+      </div>
+      <span className="text-sm text-gray-300">{label}</span>
+    </label>
+  );
+}
+
 export default function PasswordGeneratorPage() {
   const [length, setLength] = useState(20);
   const [useUpper, setUseUpper] = useState(true);
@@ -65,17 +79,7 @@ export default function PasswordGeneratorPage() {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const Option = ({ label, state, setter }: { label: string; state: boolean; setter: (v: boolean) => void }) => (
-    <label className="flex items-center gap-2 cursor-pointer select-none">
-      <div
-        className={`w-10 h-5 rounded-full transition-colors relative ${state ? "bg-blue-600" : "bg-white/10"}`}
-        onClick={() => setter(!state)}
-      >
-        <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${state ? "translate-x-5" : "translate-x-0"}`} />
-      </div>
-      <span className="text-sm text-gray-300">{label}</span>
-    </label>
-  );
+
 
   return (
     <ToolShell title="Password Generator" description="Generate cryptographically secure passwords using crypto.getRandomValues(). Zero server communication.">

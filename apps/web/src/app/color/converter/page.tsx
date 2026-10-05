@@ -73,6 +73,28 @@ function contrastRatio(hex: string): number {
   return L > 0.5 ? (Lw + 0.05) / (L + 0.05) : (L + 0.05) / (Lb + 0.05);
 }
 
+interface CopyRowProps {
+  label: string;
+  value: string;
+  id: string;
+  isCopied: boolean;
+  onCopy: (val: string, id: string) => void;
+}
+
+function CopyRow({ label, value, id, isCopied, onCopy }: CopyRowProps) {
+  return (
+    <div className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
+      <span className="text-sm text-gray-500">{label}</span>
+      <div className="flex items-center gap-2">
+        <code className="text-sm text-gray-200 font-mono">{value}</code>
+        <button onClick={() => onCopy(value, id)} className="text-gray-600 hover:text-white transition-colors">
+          {isCopied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function ColorConverterPage() {
   const [hex, setHex] = useState("#3b82f6");
   const [copied, setCopied] = useState<string | null>(null);
@@ -82,25 +104,12 @@ export default function ColorConverterPage() {
   const hsl = rgb ? rgbToHsl(...rgb) : null;
   const cmyk = rgb ? rgbToCmyk(...rgb) : null;
   const ratio = contrastRatio(hex);
-  const isLight = rgb ? (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) > 128 : false;
 
   const copy = (v: string, k: string) => {
     navigator.clipboard.writeText(v);
     setCopied(k);
     setTimeout(() => setCopied(null), 2000);
   };
-
-  const CopyRow = ({ label, value, id }: { label: string; value: string; id: string }) => (
-    <div className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <div className="flex items-center gap-2">
-        <code className="text-sm text-gray-200 font-mono">{value}</code>
-        <button onClick={() => copy(value, id)} className="text-gray-600 hover:text-white transition-colors">
-          {copied === id ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
-        </button>
-      </div>
-    </div>
-  );
 
   return (
     <ToolShell title="Color Converter" description="Convert between HEX, RGB, HSL, HSV, and CMYK. Instant color picker included.">
@@ -140,12 +149,12 @@ export default function ColorConverterPage() {
         {/* Color formats */}
         {rgb && hsl && cmyk && (
           <div className="glass rounded-xl p-5">
-            <CopyRow label="HEX" value={hex.toUpperCase()} id="hex" />
-            <CopyRow label="RGB" value={`rgb(${rgb.join(", ")})`} id="rgb" />
-            <CopyRow label="HSL" value={`hsl(${hsl[0]}deg, ${hsl[1]}%, ${hsl[2]}%)`} id="hsl" />
-            <CopyRow label="CSS HSL" value={`hsl(${hsl[0]} ${hsl[1]}% ${hsl[2]}%)`} id="csshsl" />
-            <CopyRow label="CMYK" value={`cmyk(${cmyk[0]}%, ${cmyk[1]}%, ${cmyk[2]}%, ${cmyk[3]}%)`} id="cmyk" />
-            <CopyRow label="CSS Filter" value={`invert(${hsl[2]}%) sepia(0%) saturate(${hsl[1]}%) hue-rotate(${hsl[0]}deg)`} id="cssfilter" />
+            <CopyRow label="HEX" value={hex.toUpperCase()} id="hex" isCopied={copied === "hex"} onCopy={copy} />
+            <CopyRow label="RGB" value={`rgb(${rgb.join(", ")})`} id="rgb" isCopied={copied === "rgb"} onCopy={copy} />
+            <CopyRow label="HSL" value={`hsl(${hsl[0]}deg, ${hsl[1]}%, ${hsl[2]}%)`} id="hsl" isCopied={copied === "hsl"} onCopy={copy} />
+            <CopyRow label="CSS HSL" value={`hsl(${hsl[0]} ${hsl[1]}% ${hsl[2]}%)`} id="csshsl" isCopied={copied === "csshsl"} onCopy={copy} />
+            <CopyRow label="CMYK" value={`cmyk(${cmyk[0]}%, ${cmyk[1]}%, ${cmyk[2]}%, ${cmyk[3]}%)`} id="cmyk" isCopied={copied === "cmyk"} onCopy={copy} />
+            <CopyRow label="CSS Filter" value={`invert(${hsl[2]}%) sepia(0%) saturate(${hsl[1]}%) hue-rotate(${hsl[0]}deg)`} id="cssfilter" isCopied={copied === "cssfilter"} onCopy={copy} />
           </div>
         )}
 

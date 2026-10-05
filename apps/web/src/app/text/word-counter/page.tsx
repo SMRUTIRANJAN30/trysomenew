@@ -22,18 +22,20 @@ function countWords(text: string) {
   return { wordCount: words.length, charCount: text.length, charNoSpaces: text.replace(/\s/g, "").length, sentences, paragraphs, readingTime, speakingTime, uniqueWords, topWords };
 }
 
-export default function WordCounterPage() {
-  const [text, setText] = useState("The quick brown fox jumps over the lazy dog. This is a simple sentence to demonstrate the word counter. Start typing your own text below!\n\nThis is a second paragraph to show paragraph counting.");
-  const stats = countWords(text);
-  const [copied, setCopied] = useState(false);
-
-  const Stat = ({ label, value, sub }: { label: string; value: string | number; sub?: string }) => (
+function WordStat({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+  return (
     <div className="glass rounded-xl p-4 text-center">
       <div className="text-2xl font-bold text-white">{value.toLocaleString()}</div>
       <div className="text-sm text-gray-400 mt-1">{label}</div>
       {sub && <div className="text-xs text-gray-600 mt-0.5">{sub}</div>}
     </div>
   );
+}
+
+export default function WordCounterPage() {
+  const [text, setText] = useState("The quick brown fox jumps over the lazy dog. This is a simple sentence to demonstrate the word counter. Start typing your own text below!\n\nThis is a second paragraph to show paragraph counting.");
+  const stats = countWords(text);
+  const [_copied, _setCopied] = useState(false);
 
   return (
     <ToolShell title="Word Counter" description="Real-time word, character, sentence, paragraph counting with reading time and word frequency.">
@@ -49,14 +51,14 @@ export default function WordCounterPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          <Stat label="Words" value={stats.wordCount} />
-          <Stat label="Characters" value={stats.charCount} />
-          <Stat label="Chars (no spaces)" value={stats.charNoSpaces} />
-          <Stat label="Sentences" value={stats.sentences} />
-          <Stat label="Paragraphs" value={stats.paragraphs} />
-          <Stat label="Unique Words" value={stats.uniqueWords} />
-          <Stat label="Reading Time" value={`${stats.readingTime} min`} sub="@ 238 wpm" />
-          <Stat label="Speaking Time" value={`${stats.speakingTime} min`} sub="@ 130 wpm" />
+          <WordStat label="Words" value={stats.wordCount} />
+          <WordStat label="Characters" value={stats.charCount} />
+          <WordStat label="Chars (no spaces)" value={stats.charNoSpaces} />
+          <WordStat label="Sentences" value={stats.sentences} />
+          <WordStat label="Paragraphs" value={stats.paragraphs} />
+          <WordStat label="Unique Words" value={stats.uniqueWords} />
+          <WordStat label="Reading Time" value={`${stats.readingTime} min`} sub="@ 238 wpm" />
+          <WordStat label="Speaking Time" value={`${stats.speakingTime} min`} sub="@ 130 wpm" />
         </div>
 
         {stats.topWords.length > 0 && (

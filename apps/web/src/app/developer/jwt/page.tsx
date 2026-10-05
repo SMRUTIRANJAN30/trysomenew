@@ -21,6 +21,28 @@ function decodeJwt(token: string) {
   };
 }
 
+interface JwtSectionProps {
+  title: string;
+  data: JwtPayload;
+  id: string;
+  isCopied: boolean;
+  onCopy: (val: string, id: string) => void;
+}
+
+function JwtSection({ title, data, id, isCopied, onCopy }: JwtSectionProps) {
+  return (
+    <div className="glass rounded-xl overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/10">
+        <span className="text-xs font-bold uppercase tracking-widest text-blue-400">{title}</span>
+        <button onClick={() => onCopy(JSON.stringify(data, null, 2), id)} className="text-gray-500 hover:text-white transition-colors">
+          {isCopied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+        </button>
+      </div>
+      <pre className="p-4 text-xs font-mono text-gray-200 overflow-x-auto">{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
+
 export default function JwtDecoderPage() {
   const [token, setToken] = useState("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c");
   const [result, setResult] = useState<{ header: JwtPayload; payload: JwtPayload; signature: string } | null>(null);
@@ -44,18 +66,6 @@ export default function JwtDecoderPage() {
   };
 
   const isExpired = result?.payload?.exp ? (result.payload.exp as number) * 1000 < Date.now() : null;
-
-  const Section = ({ title, data, id }: { title: string; data: JwtPayload; id: string }) => (
-    <div className="glass rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/10">
-        <span className="text-xs font-bold uppercase tracking-widest text-blue-400">{title}</span>
-        <button onClick={() => copy(JSON.stringify(data, null, 2), id)} className="text-gray-500 hover:text-white transition-colors">
-          {copied === id ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
-        </button>
-      </div>
-      <pre className="p-4 text-xs font-mono text-gray-200 overflow-x-auto">{JSON.stringify(data, null, 2)}</pre>
-    </div>
-  );
 
   return (
     <ToolShell title="JWT Decoder" description="Decode and inspect JWT (JSON Web Token) headers and payloads. Never sends your token anywhere.">
@@ -90,8 +100,8 @@ export default function JwtDecoderPage() {
                 ) : null}
               </div>
             )}
-            <Section title="Header" data={result.header} id="header" />
-            <Section title="Payload" data={result.payload} id="payload" />
+            <JwtSection title="Header" data={result.header} id="header" isCopied={copied === "header"} onCopy={copy} />
+            <JwtSection title="Payload" data={result.payload} id="payload" isCopied={copied === "payload"} onCopy={copy} />
             <div className="glass rounded-xl overflow-hidden">
               <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/10">
                 <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Signature (not verified)</span>

@@ -25,3 +25,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.tsbuildinfo
+*.zip
+PUSH_TO_GITHUB.bat
+PUSH_TO_GITHUB.ps1
