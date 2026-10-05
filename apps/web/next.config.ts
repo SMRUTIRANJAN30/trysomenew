@@ -27,6 +27,8 @@ const nextConfig: NextConfig = {
       { source: "/pdf-tools", destination: "/tools?category=pdf" },
       { source: "/image-tools", destination: "/tools?category=image" },
       { source: "/video-tools", destination: "/tools?category=video" },
+      { source: "/preview", destination: "/theme/aurora" },
+      { source: "/aurora", destination: "/theme/aurora" },
     ];
   },
 };
