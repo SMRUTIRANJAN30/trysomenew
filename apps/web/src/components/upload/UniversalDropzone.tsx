@@ -101,7 +101,9 @@ export function UniversalDropzone({
       if (!response.ok) throw new Error("Could not fetch file from the provided URL");
       const blob = await response.blob();
       const filename = urlValue.split("/").pop()?.split("?")[0] || "downloaded-file";
-      const file = new File([blob], filename, { type: blob.type });
+      const file = typeof window !== "undefined" && typeof (window as any).File === "function"
+        ? new (window as any).File([blob], filename, { type: blob.type }) as File
+        : Object.assign(blob, { name: filename, lastModified: Date.now() }) as unknown as File;
       onFilesSelected([file]);
       setUrlValue("");
       setUrlInputOpen(false);
