@@ -1,28 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
-import {
-  ChevronDown,
-  Layers,
-  Split,
-  Minimize2,
-  Image as ImageIcon,
-  ScanText,
-  Sparkles,
-  Receipt,
-  PenTool,
-  ShieldCheck,
-  Video,
-  FileCode,
-  ArrowRight,
-  Flame,
-} from "lucide-react";
-import { getCategoryTheme } from "@/lib/categoryTheme";
-
-interface MegaMenuProps {
-  onClose?: () => void;
-}
+import { ChevronDown, ArrowRight } from "lucide-react";
+import { DynamicIcon } from "@/components/common/DynamicIcon";
+import { CATEGORY_TINTS, ToolCategory } from "@/config/tools";
 
 export function MegaMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,6 +19,61 @@ export function MegaMenu() {
     timeoutRef.current = setTimeout(() => setIsOpen(false), 150);
   };
 
+  const categories: {
+    id: ToolCategory;
+    title: string;
+    tools: { name: string; href: string; badge?: string }[];
+  }[] = [
+    {
+      id: "pdf",
+      title: "PDF Tools",
+      tools: [
+        { name: "Merge PDF", href: "/pdf/merge", badge: "Hot" },
+        { name: "Split PDF", href: "/pdf/split" },
+        { name: "Compress PDF", href: "/pdf/compress" },
+        { name: "PDF Redact", href: "/pdf/redact" },
+        { name: "PDF to JPG", href: "/pdf/to-image" },
+        { name: "Rotate PDF", href: "/pdf/rotate" },
+      ],
+    },
+    {
+      id: "image",
+      title: "Image Tools",
+      tools: [
+        { name: "Image to PDF", href: "/image/to-pdf", badge: "Popular" },
+        { name: "Compress Image", href: "/image/compress" },
+        { name: "Resize Image", href: "/image/resize" },
+        { name: "Crop Image", href: "/image/crop" },
+        { name: "SVG Studio", href: "/svg/viewer" },
+        { name: "EXIF Stripper", href: "/security/exif-remove" },
+      ],
+    },
+    {
+      id: "text",
+      title: "Text & AI",
+      tools: [
+        { name: "Image OCR (WASM)", href: "/ocr/image", badge: "Fast" },
+        { name: "Document Summarizer", href: "/ai/summarize" },
+        { name: "Chat with PDF", href: "/ai/chat" },
+        { name: "Markdown to PDF", href: "/convert/markdown-to-pdf" },
+        { name: "Diff Checker", href: "/developer/diff" },
+        { name: "Word Counter", href: "/text/word-counter" },
+      ],
+    },
+    {
+      id: "converters",
+      title: "Converters & Dev",
+      tools: [
+        { name: "Invoice Generator", href: "/business/invoice" },
+        { name: "Screen Recorder", href: "/misc/screen-record" },
+        { name: "JSON Formatter", href: "/developer/json" },
+        { name: "QR Code Maker", href: "/qr/generator" },
+        { name: "SHA-256 Verifier", href: "/verify" },
+        { name: "Beam Live Sync", href: "/beam", badge: "New" },
+      ],
+    },
+  ];
+
   return (
     <div
       className="relative inline-block"
@@ -45,303 +82,67 @@ export function MegaMenu() {
     >
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-[var(--text-main)] hover:text-[#4F46E5] transition-colors rounded-xl"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-[var(--ink)] hover:text-[var(--pine)] transition-colors rounded-[6px]"
         aria-expanded={isOpen}
       >
         <span>All Tools</span>
         <ChevronDown
-          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180 text-[#4F46E5]" : ""}`}
+          className={`w-4 h-4 transition-transform duration-150 ${
+            isOpen ? "rotate-180 text-[var(--pine)]" : "text-[var(--muted)]"
+          }`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50 w-[880px] max-w-[95vw] animate-in fade-in slide-in-from-top-2 duration-150">
-          <div className="bg-[var(--bg-card)] border border-[var(--border-card)] rounded-2xl shadow-2xl p-6 overflow-hidden">
-            {/* 4-Column Grid */}
+        <div className="absolute top-full left-0 pt-2 z-50 w-[840px] max-w-[90vw] animate-in fade-in duration-100">
+          <div className="bg-[var(--surface)] border border-[var(--line)] rounded-[8px] shadow-[var(--shadow-dropdown)] p-6 overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {/* Column 1: PDF Tools */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-[var(--border-card)]">
-                  <span className="w-2 h-2 rounded-full bg-red-500" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-main)]">
-                    PDF Tools
-                  </h4>
-                </div>
-                <ul className="space-y-1 text-xs">
-                  <li>
-                    <Link
-                      href="/pdf/merge"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] group"
-                    >
-                      <span className="group-hover:text-[#4F46E5] font-medium">Merge PDF</span>
-                      <span className="text-[10px] text-amber-600 bg-amber-500/10 px-1.5 py-0.2 rounded font-bold">Hot</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/pdf/split"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Split & Extract Pages
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/pdf/compress"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Compress PDF
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/pdf/redact"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      <span>Redact PDF</span>
-                      <span className="text-[10px] text-cyan-600 bg-cyan-500/10 px-1.5 py-0.2 rounded font-bold">New</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/image/to-pdf"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      JPG & PNG to PDF
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/convert/markdown-to-pdf"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Markdown to PDF
-                    </Link>
-                  </li>
-                </ul>
-              </div>
+              {categories.map((cat) => {
+                const tint = CATEGORY_TINTS[cat.id];
+                return (
+                  <div key={cat.id} className="space-y-3">
+                    <div className="flex items-center gap-2 pb-2 border-b border-[var(--line)]">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: tint.text }}
+                      />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--ink)]">
+                        {cat.title}
+                      </h4>
+                    </div>
 
-              {/* Column 2: Image Tools */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-[var(--border-card)]">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-main)]">
-                    Image & SVG
-                  </h4>
-                </div>
-                <ul className="space-y-1 text-xs">
-                  <li>
-                    <Link
-                      href="/image/compress"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Compress Image
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/image/resize"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Resize Image
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/image/crop"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Crop Image
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/svg/viewer"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      SVG Viewer & Code
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/security/exif-remove"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      EXIF Metadata Remover
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/color/converter"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Color Converter Studio
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Column 3: AI & OCR Tools */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-[var(--border-card)]">
-                  <span className="w-2 h-2 rounded-full bg-blue-500" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-main)]">
-                    AI & OCR
-                  </h4>
-                </div>
-                <ul className="space-y-1 text-xs">
-                  <li>
-                    <Link
-                      href="/ocr/image"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      <span>Image OCR (WASM)</span>
-                      <span className="text-[10px] text-cyan-600 bg-cyan-500/10 px-1.5 py-0.2 rounded font-bold">Fast</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/ocr/pdf"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Scanned PDF OCR
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/ai/summarize"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      AI Document Summarizer
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/ai/chat"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Chat with PDF
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/ai/transcribe"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Speech to Text Dictation
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/ai/tts"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Text to Speech (TTS)
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Column 4: Business & Security */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-[var(--border-card)]">
-                  <span className="w-2 h-2 rounded-full bg-orange-500" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-main)]">
-                    Business & Sign
-                  </h4>
-                </div>
-                <ul className="space-y-1 text-xs">
-                  <li>
-                    <Link
-                      href="/business/invoice"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      <span>Invoice Generator</span>
-                      <span className="text-[10px] text-emerald-600 bg-emerald-500/10 px-1.5 py-0.2 rounded font-bold">PDF</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/business/receipt"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Receipt Generator
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/sign/draw"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Draw Digital Signature
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/sign/type"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Calligraphy Signatures
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/misc/screen-record"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      Screen Recorder (HD)
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/verify"
-                      onClick={() => setIsOpen(false)}
-                      className="block p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-main)] hover:text-[#4F46E5] font-medium"
-                    >
-                      SHA-256 Verifier
-                    </Link>
-                  </li>
-                </ul>
-              </div>
+                    <ul className="space-y-1 text-xs">
+                      {cat.tools.map((tool) => (
+                        <li key={tool.name}>
+                          <Link
+                            href={tool.href}
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center justify-between p-1.5 rounded-[4px] hover:bg-[var(--sunken)] text-[var(--ink)] hover:text-[var(--pine)] transition-colors group"
+                          >
+                            <span className="font-medium">{tool.name}</span>
+                            {tool.badge && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-[var(--warning-tint)] text-[var(--warning)]">
+                                {tool.badge}
+                              </span>
+                            )}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Bottom Bar */}
-            <div className="mt-6 pt-4 border-t border-[var(--border-card)] flex items-center justify-between text-xs">
-              <div className="flex items-center gap-4 text-[var(--text-muted)]">
-                <span>⚡ 100% Client-Side Processing</span>
-                <span>•</span>
-                <span>🔒 Zero Server File Storage</span>
-              </div>
+            <div className="mt-6 pt-4 border-t border-[var(--line)] flex items-center justify-between text-xs text-[var(--muted)]">
+              <span>All 177+ tools run locally in browser memory without server file uploads.</span>
               <Link
                 href="/tools"
                 onClick={() => setIsOpen(false)}
-                className="font-bold text-[#4F46E5] hover:text-[#4338CA] flex items-center gap-1 transition-colors"
+                className="font-semibold text-[var(--pine)] hover:underline flex items-center gap-1"
               >
-                <span>Browse All 177+ Tools</span>
-                <ArrowRight size={14} />
+                <span>Browse Directory</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>

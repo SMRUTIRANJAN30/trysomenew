@@ -1,363 +1,356 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   Search,
-  Sparkles,
-  Zap,
-  ShieldCheck,
-  Smartphone,
-  Gift,
-  ChevronDown,
-  Flame,
   ArrowRight,
+  ChevronDown,
   Layers,
-  Lock,
-  Clock,
-  CheckCircle2,
+  Radio,
+  Copy,
+  QrCode,
+  ShieldCheck,
+  Check,
 } from "lucide-react";
-import { TOOLS, ToolDefinition } from "@/lib/toolsData";
+import { TOOLS_CONFIG, CATEGORY_NAMES, CATEGORY_TINTS, ToolCategory } from "@/config/tools";
 import { ToolCard } from "@/components/common/ToolCard";
-import { CategoryTabs, CategoryFilter } from "@/components/common/CategoryTabs";
+import { DynamicIcon } from "@/components/common/DynamicIcon";
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<CategoryFilter>("all");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
-  // Trigger search palette via event
   const openSearch = () => {
     window.dispatchEvent(new CustomEvent("toggle-command-palette"));
   };
-
-  // Top 8 Popular Tools placed ABOVE full grid
-  const popularTools = useMemo(() => {
-    return TOOLS.filter((t) => t.isPopular && t.status === "ready").slice(0, 8);
-  }, []);
-
-  // Filter tools based on active category
-  const filteredTools = useMemo(() => {
-    return TOOLS.filter((tool) => {
-      if (tool.status !== "ready") return false;
-      const cat = tool.category.toLowerCase();
-
-      if (activeTab === "all") return true;
-      if (activeTab === "pdf") {
-        return cat.includes("pdf") || cat.includes("signature") || cat.includes("watermark");
-      }
-      if (activeTab === "image") {
-        return cat.includes("image") || cat.includes("svg") || cat.includes("color");
-      }
-      if (activeTab === "video") {
-        return cat.includes("video") || cat.includes("audio") || cat.includes("media") || cat.includes("gif");
-      }
-      if (activeTab === "text") {
-        return cat.includes("text") || cat.includes("ai") || cat.includes("ocr") || cat.includes("education");
-      }
-      if (activeTab === "converters") {
-        return cat.includes("convert") || cat.includes("calc") || cat.includes("qr") || cat.includes("barcode") || cat.includes("business");
-      }
-      if (activeTab === "developer") {
-        return cat.includes("developer") || cat.includes("security") || cat.includes("archive") || cat.includes("transfer") || cat.includes("clipboard");
-      }
-      return true;
-    });
-  }, [activeTab]);
-
-  // Counts for tabs
-  const categoryCounts = useMemo(() => {
-    const counts: Record<CategoryFilter, number> = {
-      all: 0,
-      pdf: 0,
-      image: 0,
-      video: 0,
-      text: 0,
-      converters: 0,
-      developer: 0,
-    };
-
-    for (const tool of TOOLS) {
-      if (tool.status !== "ready") continue;
-      counts.all++;
-      const cat = tool.category.toLowerCase();
-      if (cat.includes("pdf") || cat.includes("signature") || cat.includes("watermark")) counts.pdf++;
-      if (cat.includes("image") || cat.includes("svg") || cat.includes("color")) counts.image++;
-      if (cat.includes("video") || cat.includes("audio") || cat.includes("media") || cat.includes("gif")) counts.video++;
-      if (cat.includes("text") || cat.includes("ai") || cat.includes("ocr") || cat.includes("education")) counts.text++;
-      if (cat.includes("convert") || cat.includes("calc") || cat.includes("qr") || cat.includes("barcode") || cat.includes("business")) counts.converters++;
-      if (cat.includes("developer") || cat.includes("security") || cat.includes("archive") || cat.includes("transfer") || cat.includes("clipboard")) counts.developer++;
-    }
-
-    return counts;
-  }, []);
 
   const popularChips = [
     { label: "Merge PDF", href: "/pdf/merge" },
     { label: "Compress PDF", href: "/pdf/compress" },
     { label: "JPG to PDF", href: "/image/to-pdf" },
     { label: "Image OCR", href: "/ocr/image" },
-    { label: "PDF Redact", href: "/pdf/redact" },
+    { label: "Redact PDF", href: "/pdf/redact" },
     { label: "Invoice Generator", href: "/business/invoice" },
-    { label: "Screen Recorder", href: "/misc/screen-record" },
   ];
 
-  const whyChooseUs = [
+  const mostUsedTools = TOOLS_CONFIG.slice(0, 8);
+
+  const categoryGroups: ToolCategory[] = ["pdf", "image", "text", "converters", "developer"];
+
+  const whyChoosePoints = [
     {
-      icon: <Zap className="w-6 h-6 text-amber-500" />,
-      title: "Ultra Fast",
-      desc: "Processed client-side in milliseconds using WebAssembly & modern browser engines without queue delays.",
+      number: "01",
+      title: "100% In-Browser Execution",
+      desc: "Your files never leave your computer. WebAssembly and client JavaScript perform conversions directly in your browser memory.",
     },
     {
-      icon: <ShieldCheck className="w-6 h-6 text-emerald-500" />,
-      title: "Secure & Private",
-      desc: "Zero-storage guarantee. Your documents never upload to external servers and never leave your computer.",
+      number: "02",
+      title: "Zero Queue Delays & File Size Traps",
+      desc: "Instant processing without waiting behind server queues or hitting hidden subscription paywalls after 2 files.",
     },
     {
-      icon: <Gift className="w-6 h-6 text-indigo-500" />,
-      title: "100% Free Forever",
-      desc: "No hidden subscriptions, no file size paywalls, and no account registration required. Just open and work.",
+      number: "03",
+      title: "No Accounts, Watermarks, or Ads Tracking",
+      desc: "Open any tool and start working immediately. No signup forms, no email collection, and no forced branding.",
     },
     {
-      icon: <Smartphone className="w-6 h-6 text-blue-500" />,
-      title: "Works on Any Device",
-      desc: "Fully responsive across iOS, Android, Windows, Mac, and Linux with full Progressive Web App (PWA) support.",
+      number: "04",
+      title: "Instant Phone & PC Device Pairing",
+      desc: "Beam signature feature connects phone camera, tablet, and laptop clipboard seamlessly with end-to-end encryption.",
     },
   ];
 
   const faqs = [
     {
-      q: "Is trysomenew completely free without hidden limits?",
-      a: "Yes! Every single tool on trysomenew is 100% free with no watermarks, no registration, and no hidden file size paywalls.",
+      question: "Are my documents and photos uploaded to your servers?",
+      answer:
+        "No. Every tool runs completely client-side in your web browser. When you merge PDFs, optimize images, or run OCR, your files are read into local browser memory and never transmitted over the network.",
     },
     {
-      q: "Are my sensitive files uploaded to your servers?",
-      a: "No. Unlike legacy cloud converters, trysomenew runs operations directly inside your browser memory using WebAssembly, Canvas, and WebCrypto. Your files never leave your device.",
+      question: "Is trysomenew completely free to use?",
+      answer:
+        "Yes, all 177+ tools are completely free with no usage limits, no credit card requirements, and no watermarks placed on your exported documents.",
     },
     {
-      q: "How does the Image and PDF OCR work?",
-      a: "We execute a compiled WebAssembly optical character recognition pipeline inside your browser that scans images or PDF pages and pulls text streams locally in seconds.",
+      question: "How does the Beam live clipboard pairing work?",
+      answer:
+        "Beam creates a temporary peer channel using a 6-character room code or QR scan. Text and files are encrypted end-to-end in your browser using Web Crypto AES-GCM before transferring between devices.",
     },
     {
-      q: "Can I use trysomenew offline on mobile or desktop?",
-      a: "Yes! trysomenew is engineered as a modern Progressive Web App (PWA). You can install it to your home screen or desktop dock and access tools offline without an internet connection.",
+      question: "Can I use these tools on iPhone, Android, and tablets?",
+      answer:
+        "Yes. The entire platform is built mobile-first and works across iOS Safari, Android Chrome, Firefox, Edge, and macOS Safari without installing native apps.",
     },
     {
-      q: "How does cryptographic document verification work?",
-      a: "TrySomeNew computes a genuine SHA-256 cryptographic digest of your file's binary stream using the native browser WebCrypto API. If even a single byte is altered, verification fails immediately.",
+      question: "What is the maximum file size I can process?",
+      answer:
+        "Because processing occurs in your device RAM, you can comfortably process documents up to 100MB-200MB depending on your available device memory.",
     },
   ];
 
-  // FAQ Schema for SEO rich results
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((f) => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: f.a,
-      },
-    })),
-  };
-
   return (
-    <div className="w-full">
-      {/* FAQ JSON-LD Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+    <div className="w-full text-left">
+      {/* 1. HERO SECTION (Left-Aligned + Tool Preview Mock) */}
+      <section className="py-12 sm:py-16 md:py-20 border-b border-[var(--line)]">
+        <div className="max-w-[1180px] mx-auto px-4 sm:px-6 md:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Left: Left-aligned Hero Content */}
+            <div className="lg:col-span-7 space-y-6">
+              <h1 className="text-[var(--ink)] leading-[1.12]">
+                PDF, image and file tools that run in your browser
+              </h1>
 
-      {/* 1. HERO SECTION (80px top/bottom padding, max 1200px) */}
-      <section className="relative py-16 sm:py-20 px-4 sm:px-6 max-w-[1200px] mx-auto text-center">
-        {/* Subtle decorative aura */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[300px] bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none -z-10" />
+              <p className="text-base sm:text-lg text-[var(--muted)] max-w-xl leading-relaxed">
+                Fast, privacy-first tools for documents, conversions, text, and device pairing.
+                Everything processes directly on your device with zero server storage.
+              </p>
 
-        <div className="max-w-3xl mx-auto space-y-5">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--bg-card)] border border-[var(--border-card)] text-xs font-semibold text-[var(--text-muted)] shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-[#4F46E5]" />
-            <span>Fast, Private, Zero-Cloud Document Workspace</span>
-            <span className="text-[var(--text-muted)]">•</span>
-            <span className="text-[#4F46E5] font-bold">177+ Tools</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-extrabold tracking-tight text-[var(--text-main)] leading-[1.15]">
-            Free Online Tools to <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-[#4F46E5] via-[#7C3AED] to-[#F97316] bg-clip-text text-transparent">
-              Convert, Compress and Edit Files
-            </span>
-          </h1>
-
-          <p className="text-base sm:text-lg text-[var(--text-muted)] leading-relaxed max-w-2xl mx-auto font-medium">
-            177+ fast, secure tools. No signup. Files processed locally in your browser.
-          </p>
-
-          {/* HUGE SEARCH BAR (720px max width, 60px height, rounded-2xl) */}
-          <div className="pt-4 max-w-[720px] mx-auto">
-            <button
-              onClick={openSearch}
-              className="w-full h-[60px] px-5 rounded-2xl bg-[var(--bg-card)] border-2 border-[var(--border-card)] hover:border-[#4F46E5] text-[var(--text-muted)] flex items-center justify-between shadow-lg shadow-black/5 hover:shadow-indigo-500/10 transition-all duration-200 cursor-pointer group"
-            >
-              <div className="flex items-center gap-3.5">
-                <Search className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[#4F46E5] transition-colors" />
-                <span className="text-sm sm:text-base font-medium">
-                  Search 177+ tools... e.g. image to pdf, reduce size
-                </span>
-              </div>
-              <kbd className="hidden sm:flex items-center justify-center h-7 px-2.5 rounded-lg bg-black/5 dark:bg-white/10 border border-[var(--border-card)] font-mono text-xs text-[var(--text-main)] group-hover:border-[#4F46E5] transition-colors">
-                /
-              </kbd>
-            </button>
-
-            {/* Popular quick chips */}
-            <div className="pt-4 flex items-center justify-center flex-wrap gap-2 text-xs">
-              <span className="text-[var(--text-muted)] font-semibold mr-1">Popular:</span>
-              {popularChips.map((chip) => (
-                <Link
-                  key={chip.href}
-                  href={chip.href}
-                  className="px-3 py-1.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-card)] text-[var(--text-main)] hover:border-[#4F46E5] hover:text-[#4F46E5] font-medium transition-colors shadow-2xs"
+              {/* 640x56px Search Trigger */}
+              <div className="max-w-[640px] pt-1">
+                <button
+                  onClick={openSearch}
+                  className="w-full h-14 px-4 sm:px-5 bg-[var(--surface)] border border-[var(--line)] rounded-[6px] text-left text-sm sm:text-base text-[var(--muted)] flex items-center justify-between hover:border-[var(--pine)] transition-colors shadow-xs group cursor-pointer"
                 >
-                  {chip.label}
-                </Link>
-              ))}
+                  <div className="flex items-center gap-3">
+                    <Search className="w-5 h-5 text-[var(--muted)] group-hover:text-[var(--pine)]" />
+                    <span>Search 177+ tools (e.g. merge pdf, ocr, invoice)...</span>
+                  </div>
+                  <kbd className="hidden sm:inline-flex px-2 py-1 text-xs font-mono rounded bg-[var(--sunken)] text-[var(--muted)] border border-[var(--line)]">
+                    /
+                  </kbd>
+                </button>
+              </div>
+
+              {/* Popular Quick Chips */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-xs font-semibold text-[var(--muted)] mr-1">Popular:</span>
+                {popularChips.map((chip) => (
+                  <Link
+                    key={chip.label}
+                    href={chip.href}
+                    className="px-2.5 py-1 text-xs font-medium bg-[var(--surface)] border border-[var(--line)] rounded-[6px] hover:border-[var(--pine)] hover:text-[var(--pine)] text-[var(--ink)] transition-colors"
+                  >
+                    {chip.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Static Tool Page Preview Mock (No stock illustration) */}
+            <div className="hidden lg:block lg:col-span-5">
+              <div className="bg-[var(--surface)] border border-[var(--line)] rounded-[8px] p-5 shadow-xs">
+                <div className="flex items-center justify-between pb-3 mb-4 border-b border-[var(--line)]">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-[4px] bg-[var(--cat-pdf)] text-[#8A2810] flex items-center justify-center font-bold text-xs">
+                      <Layers className="w-4 h-4" />
+                    </div>
+                    <span className="text-sm font-semibold text-[var(--ink)]">Merge PDF</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-[var(--pine)] bg-[var(--pine-tint)] px-2 py-0.5 rounded">
+                    Client-Side
+                  </span>
+                </div>
+
+                {/* Dropzone preview */}
+                <div className="border border-dashed border-[var(--line)] rounded-[6px] p-6 text-center bg-[var(--sunken)]/50 mb-4">
+                  <div className="w-10 h-10 rounded-[6px] bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center mx-auto text-[var(--pine)] mb-2">
+                    <Layers className="w-5 h-5" />
+                  </div>
+                  <p className="text-xs font-semibold text-[var(--ink)]">
+                    Drop PDF files here to combine
+                  </p>
+                  <p className="text-[11px] text-[var(--muted)] mt-0.5">
+                    Drag to reorder pages before merging
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <span className="text-[var(--muted)]">2 files selected (3.4 MB)</span>
+                  <Link href="/pdf/merge" className="btn-terracotta text-xs h-9 px-4">
+                    Open Tool
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. CATEGORY TABS (Sticky below header) */}
-      <CategoryTabs activeTab={activeTab} onChange={setActiveTab} counts={categoryCounts} />
+      {/* 2. MOST USED TOOLS (2-Column Compact Rows) */}
+      <section className="py-14 sm:py-16 max-w-[1180px] mx-auto px-4 sm:px-6 md:px-8 border-b border-[var(--line)]">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold">Most used tools</h2>
+            <p className="text-sm text-[var(--muted)] mt-0.5">
+              Quick access to our core document and conversion utilities.
+            </p>
+          </div>
+          <Link
+            href="/tools"
+            className="text-sm font-semibold text-[var(--pine)] hover:underline flex items-center gap-1 shrink-0"
+          >
+            <span>All 177+ tools</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
 
-      {/* 3. MAIN CONTENT CONTAINER (max 1200px, 24px padding) */}
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-12 space-y-16">
-        {/* 4. MOST POPULAR TOOLS (Top 8 above full grid) */}
-        {activeTab === "all" && (
-          <section className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-                  <Flame size={18} className="fill-amber-500" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {mostUsedTools.map((tool) => (
+            <ToolCard key={tool.slug} tool={tool} />
+          ))}
+        </div>
+      </section>
+
+      {/* 3. CATEGORY SECTIONS (Blocks with tinted icon tiles) */}
+      <section className="py-14 sm:py-16 max-w-[1180px] mx-auto px-4 sm:px-6 md:px-8 border-b border-[var(--line)] space-y-12">
+        {categoryGroups.map((catKey) => {
+          const categoryTools = TOOLS_CONFIG.filter((t) => t.category === catKey).slice(0, 4);
+          if (categoryTools.length === 0) return null;
+          const catName = CATEGORY_NAMES[catKey];
+          const tint = CATEGORY_TINTS[catKey];
+
+          return (
+            <div key={catKey} className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: tint.text }}
+                  />
+                  <h3 className="text-lg font-semibold">{catName}</h3>
                 </div>
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)]">
-                    Most Popular Tools
-                  </h2>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    Quick access to our highest-trafficked productivity utilities.
-                  </p>
-                </div>
+                <Link
+                  href={`/tools?category=${catKey}`}
+                  className="text-xs font-semibold text-[var(--pine)] hover:underline flex items-center gap-1"
+                >
+                  <span>See all {catName}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {categoryTools.map((tool) => (
+                  <ToolCard key={tool.slug} tool={tool} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </section>
+
+      {/* 4. BEAM SIGNATURE SECTION (Split Layout) */}
+      <section className="py-14 sm:py-16 max-w-[1180px] mx-auto px-4 sm:px-6 md:px-8 border-b border-[var(--line)]">
+        <div className="bg-[var(--surface)] border border-[var(--line)] rounded-[8px] p-6 sm:p-8 md:p-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Column: Text */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[var(--pine-tint)] text-[var(--pine)] text-xs font-semibold">
+                <Radio className="w-3.5 h-3.5 text-[var(--terracotta)]" />
+                <span>Signature Feature</span>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-semibold">
+                Beam: Send text, links and files from phone to PC
+              </h2>
+
+              <p className="text-sm sm:text-base text-[var(--muted)] leading-relaxed">
+                No sign-in, no cables, and no messaging yourself on WhatsApp. Scan a QR code on your phone
+                or enter a 6-character code on your PC to sync in real time with end-to-end encryption.
+              </p>
+
+              <div className="pt-2">
+                <Link href="/beam" className="btn-terracotta text-sm">
+                  <span>Start Beam Session</span>
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Link>
               </div>
             </div>
 
-            {/* 4 Columns Desktop, 2 Tablet, 1 Mobile, Gap 20px */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {popularTools.map((tool) => (
-                <ToolCard key={tool.id} tool={tool} />
-              ))}
-            </div>
-          </section>
-        )}
+            {/* Right Column: QR + Code Mock */}
+            <div className="lg:col-span-5 bg-[var(--sunken)] border border-[var(--line)] rounded-[6px] p-6 text-center space-y-4">
+              <div className="inline-block p-3 bg-[var(--surface)] border border-[var(--line)] rounded-[6px]">
+                <div className="w-28 h-28 flex items-center justify-center bg-[var(--surface)] text-[var(--ink)]">
+                  <QrCode className="w-24 h-24" />
+                </div>
+              </div>
 
-        {/* 5. FULL CATEGORY TOOL GRID (4 cols desktop, 2 cols tablet, 1-2 mobile, gap 20px) */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between border-b border-[var(--border-card)] pb-4">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)]">
-                {activeTab === "all" ? "All Online Tools" : `${activeTab.toUpperCase()} Tools`}
-              </h2>
-              <p className="text-xs text-[var(--text-muted)]">
-                Showing {filteredTools.length} tools ready to use locally.
+              <div>
+                <div className="text-xs text-[var(--muted)] mb-1">Pairing Code</div>
+                <div className="font-mono text-2xl font-bold tracking-widest text-[var(--ink)]">
+                  749 283
+                </div>
+              </div>
+
+              <p className="text-[11px] text-[var(--muted)]">
+                End-to-end encrypted with Web Crypto AES-GCM. Auto-expires in 10 minutes.
               </p>
             </div>
-            <button
-              onClick={openSearch}
-              className="text-xs font-bold text-[#4F46E5] hover:underline flex items-center gap-1"
-            >
-              <span>Instant Search</span>
-              <Search size={13} />
-            </button>
           </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {filteredTools.map((tool) => (
-              <ToolCard key={tool.id} tool={tool} />
-            ))}
-          </div>
-        </section>
+      {/* 5. WHY PEOPLE USE IT (Short Numbered List) */}
+      <section className="py-14 sm:py-16 max-w-[1180px] mx-auto px-4 sm:px-6 md:px-8 border-b border-[var(--line)]">
+        <div className="mb-8">
+          <h2 className="text-xl sm:text-2xl font-semibold">Why people use trysomenew</h2>
+          <p className="text-sm text-[var(--muted)] mt-0.5">
+            Built as a dependable, private alternative to ad-heavy document portals.
+          </p>
+        </div>
 
-        {/* 6. WHY CHOOSE US - 4 ICON BLOCKS */}
-        <section className="pt-8 border-t border-[var(--border-card)] space-y-8">
-          <div className="text-center max-w-xl mx-auto space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-main)]">
-              Why Choose trysomenew?
-            </h2>
-            <p className="text-sm text-[var(--text-muted)]">
-              Designed from the ground up for speed, privacy, and zero compromise.
-            </p>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {whyChoosePoints.map((item) => (
+            <div key={item.number} className="space-y-2 border-t border-[var(--line)] pt-4">
+              <span className="font-mono text-xs font-semibold text-[var(--pine)]">
+                {item.number}
+              </span>
+              <h4 className="text-base font-semibold text-[var(--ink)]">{item.title}</h4>
+              <p className="text-sm text-[var(--muted)] leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {whyChooseUs.map((item, idx) => (
+      {/* 6. FAQ ACCORDION */}
+      <section className="py-14 sm:py-16 max-w-[1180px] mx-auto px-4 sm:px-6 md:px-8">
+        <div className="max-w-2xl mb-8">
+          <h2 className="text-xl sm:text-2xl font-semibold">Frequently asked questions</h2>
+          <p className="text-sm text-[var(--muted)] mt-0.5">
+            Clear, honest answers about privacy, file processing, and device support.
+          </p>
+        </div>
+
+        <div className="space-y-3 max-w-3xl">
+          {faqs.map((faq, idx) => {
+            const isOpen = openFaqIndex === idx;
+            return (
               <div
-                key={idx}
-                className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] space-y-3 shadow-xs hover:border-[#4F46E5]/40 transition-colors"
+                key={faq.question}
+                className="bg-[var(--surface)] border border-[var(--line)] rounded-[6px] overflow-hidden transition-colors"
               >
-                <div className="w-12 h-12 rounded-xl bg-[var(--bg-section)] border border-[var(--border-card)] flex items-center justify-center">
-                  {item.icon}
-                </div>
-                <h3 className="text-base font-bold text-[var(--text-main)]">{item.title}</h3>
-                <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-                  {item.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 7. FREQUENTLY ASKED QUESTIONS (Accordion with Schema) */}
-        <section className="pt-8 border-t border-[var(--border-card)] max-w-3xl mx-auto space-y-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-main)]">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-sm text-[var(--text-muted)]">
-              Everything you need to know about our local-first tool suite.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {faqs.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <div
-                  key={idx}
-                  className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] overflow-hidden transition-colors"
+                <button
+                  type="button"
+                  onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                  aria-expanded={isOpen}
+                  className="w-full p-4 text-left font-semibold text-sm sm:text-base text-[var(--ink)] flex items-center justify-between gap-4 cursor-pointer"
                 >
-                  <button
-                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full px-5 py-4 text-left font-bold text-sm sm:text-base text-[var(--text-main)] flex items-center justify-between gap-4 cursor-pointer hover:text-[#4F46E5] transition-colors"
-                  >
-                    <span>{faq.q}</span>
-                    <ChevronDown
-                      size={18}
-                      className={`text-[var(--text-muted)] shrink-0 transition-transform duration-200 ${
-                        isOpen ? "rotate-180 text-[#4F46E5]" : ""
-                      }`}
-                    />
-                  </button>
-                  {isOpen && (
-                    <div className="px-5 pb-4 text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed border-t border-[var(--border-card)]/50 pt-3 animate-in fade-in duration-150">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      </div>
+                  <span>{faq.question}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-[var(--muted)] transition-transform duration-150 shrink-0 ${
+                      isOpen ? "rotate-180 text-[var(--pine)]" : ""
+                    }`}
+                  />
+                </button>
+                {isOpen && (
+                  <div className="px-4 pb-4 text-sm text-[var(--muted)] leading-relaxed border-t border-[var(--line)] pt-3">
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }

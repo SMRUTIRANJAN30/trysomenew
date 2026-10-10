@@ -37,29 +37,26 @@ describe("trysomenew - Cryptographic Integrity Engine", () => {
 
 describe("trysomenew - PDF Processing Engine", () => {
   test("creates, merges, and validates multi-page PDF documents locally", async () => {
-    // Generate doc 1 (2 pages)
     const doc1 = await PDFDocument.create();
     doc1.addPage([595, 842]);
     doc1.addPage([595, 842]);
     const bytes1 = await doc1.save();
 
-    // Generate doc 2 (3 pages)
     const doc2 = await PDFDocument.create();
     doc2.addPage([595, 842]);
     doc2.addPage([595, 842]);
     doc2.addPage([595, 842]);
     const bytes2 = await doc2.save();
 
-    // Perform merge
     const merged = await PDFDocument.create();
     const loaded1 = await PDFDocument.load(bytes1);
     const loaded2 = await PDFDocument.load(bytes2);
 
     const pages1 = await merged.copyPages(loaded1, loaded1.getPageIndices());
-    pages1.forEach(p => merged.addPage(p));
+    pages1.forEach((p) => merged.addPage(p));
 
     const pages2 = await merged.copyPages(loaded2, loaded2.getPageIndices());
-    pages2.forEach(p => merged.addPage(p));
+    pages2.forEach((p) => merged.addPage(p));
 
     const mergedBytes = await merged.save();
     const verifyDoc = await PDFDocument.load(mergedBytes);
@@ -80,11 +77,29 @@ describe("trysomenew - PDF Processing Engine", () => {
 
     const extractedDoc = await PDFDocument.create();
     const copied = await extractedDoc.copyPages(loaded, extractIndices);
-    copied.forEach(p => extractedDoc.addPage(p));
+    copied.forEach((p) => extractedDoc.addPage(p));
 
     const extractedBytes = await extractedDoc.save();
     const resultDoc = await PDFDocument.load(extractedBytes);
 
     assert.equal(resultDoc.getPageCount(), 3);
+  });
+});
+
+describe("trysomenew - Beam Pairing Code Generator", () => {
+  test("generates 6-character uppercase codes without ambiguous characters (0, O, 1, I, L)", () => {
+    const chars = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+    let code = "";
+    const randomValues = crypto.randomBytes(6);
+    for (let i = 0; i < 6; i++) {
+      code += chars[randomValues[i] % chars.length];
+    }
+
+    assert.equal(code.length, 6);
+    assert.match(code, /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6}$/);
+    assert.ok(!code.includes("0"));
+    assert.ok(!code.includes("O"));
+    assert.ok(!code.includes("1"));
+    assert.ok(!code.includes("I"));
   });
 });

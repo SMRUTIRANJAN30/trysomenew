@@ -2,20 +2,25 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ToolDefinition } from "@/lib/toolsData";
+import { Star } from "lucide-react";
+import { ToolConfig, CATEGORY_TINTS, ToolCategory } from "@/config/tools";
 import { DynamicIcon } from "./DynamicIcon";
-import { getCategoryTheme } from "@/lib/categoryTheme";
-import { Flame, Sparkles, Star } from "lucide-react";
+import { clsx } from "clsx";
 
-interface ToolCardProps {
-  tool: ToolDefinition;
-  onToggleFavorite?: (toolId: string) => void;
+export interface ToolCardProps {
+  tool: ToolConfig;
+  onToggleFavorite?: (slug: string) => void;
   isFavorited?: boolean;
+  className?: string;
 }
 
-export function ToolCard({ tool, onToggleFavorite, isFavorited: propFavorited }: ToolCardProps) {
-  const theme = getCategoryTheme(tool.category);
+export function ToolCard({ tool, onToggleFavorite, isFavorited: propFavorited, className }: ToolCardProps) {
   const [isFav, setIsFav] = useState(false);
+  const catTint = CATEGORY_TINTS[tool.category as ToolCategory] || {
+    bg: "#EFEBE3",
+    text: "#1E2421",
+    iconBg: "#EFEBE3",
+  };
 
   useEffect(() => {
     if (typeof propFavorited !== "undefined") {
@@ -24,10 +29,10 @@ export function ToolCard({ tool, onToggleFavorite, isFavorited: propFavorited }:
       try {
         const raw = localStorage.getItem("trysomenew_favorites");
         const favs: string[] = raw ? JSON.parse(raw) : [];
-        setIsFav(favs.includes(tool.id));
+        setIsFav(favs.includes(tool.slug));
       } catch {}
     }
-  }, [propFavorited, tool.id]);
+  }, [propFavorited, tool.slug]);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,64 +44,64 @@ export function ToolCard({ tool, onToggleFavorite, isFavorited: propFavorited }:
       const raw = localStorage.getItem("trysomenew_favorites");
       let favs: string[] = raw ? JSON.parse(raw) : [];
       if (next) {
-        if (!favs.includes(tool.id)) favs.push(tool.id);
+        if (!favs.includes(tool.slug)) favs.push(tool.slug);
       } else {
-        favs = favs.filter((id) => id !== tool.id);
+        favs = favs.filter((id) => id !== tool.slug);
       }
       localStorage.setItem("trysomenew_favorites", JSON.stringify(favs));
       window.dispatchEvent(new CustomEvent("favorites-updated"));
     } catch {}
 
-    onToggleFavorite?.(tool.id);
+    onToggleFavorite?.(tool.slug);
   };
 
   return (
     <Link
       href={tool.href}
-      className="card-tool group relative flex flex-col justify-between p-5 min-h-[150px] w-full text-left"
+      className={clsx(
+        "tool-card group relative select-none w-full",
+        className
+      )}
     >
-      {/* Top Row: 48x48 Tinted Icon & Top-Right Badge / Favorite */}
       <div className="flex items-start justify-between gap-3">
+        {/* 40x40px Tinted Icon Tile */}
         <div
-          className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${theme.bgLight} ${theme.textLight} transition-transform group-hover:scale-110 duration-200`}
+          className="w-10 h-10 rounded-[6px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
+          style={{ backgroundColor: catTint.iconBg, color: catTint.text }}
         >
-          <DynamicIcon name={tool.iconName} className="w-6 h-6" />
+          <DynamicIcon name={tool.icon} className="w-5 h-5 stroke-[1.5]" />
         </div>
 
-        <div className="flex items-center gap-1.5">
-          {tool.isPopular && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-              <Flame size={12} className="fill-amber-500" />
-              <span>Popular</span>
-            </span>
-          )}
-
-          {tool.phase === 3 && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
-              <Sparkles size={11} />
-              <span>New</span>
-            </span>
-          )}
-
-          {/* Star Favorite Button */}
-          <button
-            onClick={handleFavoriteClick}
-            className="p-1 rounded-lg text-[var(--text-muted)] hover:text-amber-400 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-            title={isFav ? "Remove from favorites" : "Add to favorites"}
-            aria-label="Toggle favorite"
-          >
-            <Star size={16} className={isFav ? "fill-amber-400 text-amber-400 opacity-100" : ""} />
-          </button>
-        </div>
+        {/* Top-Right: Star Favorite Button */}
+        <button
+          type="button"
+          onClick={handleFavoriteClick}
+          aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+          className="p-1 rounded-[4px] text-[var(--muted)]/50 hover:text-[#B7791F] transition-colors -mr-1 -mt-1"
+        >
+          <Star
+            className={clsx(
+              "w-4 h-4 transition-colors",
+              isFav ? "fill-[#B7791F] text-[#B7791F]" : ""
+            )}
+          />
+        </button>
       </div>
 
-      {/* Bottom Content: Name & Description */}
-      <div className="space-y-1 pt-3">
-        <h3 className="text-base sm:text-[17px] font-bold text-[var(--text-main)] group-hover:text-[#4F46E5] transition-colors leading-snug line-clamp-1">
-          {tool.name}
-        </h3>
-        <p className="text-xs sm:text-[13px] text-[var(--text-muted)] line-clamp-1 leading-relaxed">
-          {tool.description}
+      {/* Title & Short Description */}
+      <div className="mt-2.5">
+        <div className="flex items-center gap-1.5 mb-1">
+          <h4 className="text-base font-semibold text-[var(--ink)] group-hover:text-[var(--pine)] transition-colors line-clamp-1">
+            {tool.name}
+          </h4>
+          {tool.isPopular && (
+            <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-[var(--warning-tint)] text-[var(--warning)] shrink-0">
+              Popular
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-[var(--muted)] line-clamp-2 leading-snug">
+          {tool.shortDescription}
         </p>
       </div>
     </Link>

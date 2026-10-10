@@ -1,107 +1,107 @@
 export interface CategoryTheme {
   name: string;
-  color: string;
-  bgSoft: string;
-  bgLight: string;
-  textLight: string;
+  color: string;        // icon / accent color
+  bgTint: string;       // card background tint hex
+  bgLight: string;      // Tailwind bg class
+  textLight: string;    // Tailwind text class
   badgeBg: string;
   badgeText: string;
   borderColor: string;
 }
 
-export const AURORA_CATEGORIES: Record<string, CategoryTheme> = {
+export const TOOLBENCH_CATEGORIES: Record<string, CategoryTheme> = {
   pdf: {
     name: "PDF Tools",
-    color: "#EF4444",
-    bgSoft: "#FEE2E2",
-    bgLight: "bg-[#FEE2E2] dark:bg-[#EF4444]/15",
-    textLight: "text-[#EF4444] dark:text-[#F87171]",
-    badgeBg: "bg-[#FEE2E2] dark:bg-red-950/40",
-    badgeText: "text-[#991B1B] dark:text-[#FCA5A5]",
-    borderColor: "hover:border-[#EF4444]/60",
+    color: "#FF5A3C",
+    bgTint: "#FFD9D2",
+    bgLight: "bg-[#FFD9D2] dark:bg-[#FF5A3C]/18",
+    textLight: "text-[#FF5A3C] dark:text-[#FF8A75]",
+    badgeBg: "bg-[#FFD9D2] dark:bg-[#FF5A3C]/20",
+    badgeText: "text-[#B33D2B] dark:text-[#FFAE9E]",
+    borderColor: "hover:border-[#FF5A3C]",
   },
   image: {
     name: "Image Tools",
-    color: "#10B981",
-    bgSoft: "#D1FAE5",
-    bgLight: "bg-[#D1FAE5] dark:bg-[#10B981]/15",
-    textLight: "text-[#059669] dark:text-[#34D399]",
-    badgeBg: "bg-[#D1FAE5] dark:bg-emerald-950/40",
-    badgeText: "text-[#065F46] dark:text-[#6EE7B7]",
-    borderColor: "hover:border-[#10B981]/60",
+    color: "#2ED47A",
+    bgTint: "#D8F5E3",
+    bgLight: "bg-[#D8F5E3] dark:bg-[#2ED47A]/18",
+    textLight: "text-[#1A9E55] dark:text-[#5EEBB0]",
+    badgeBg: "bg-[#D8F5E3] dark:bg-[#2ED47A]/20",
+    badgeText: "text-[#15703D] dark:text-[#7AEEC3]",
+    borderColor: "hover:border-[#2ED47A]",
   },
   video: {
-    name: "Video and Audio",
-    color: "#8B5CF6",
-    bgSoft: "#EDE9FE",
-    bgLight: "bg-[#EDE9FE] dark:bg-[#8B5CF6]/15",
-    textLight: "text-[#7C3AED] dark:text-[#A78BFA]",
-    badgeBg: "bg-[#EDE9FE] dark:bg-purple-950/40",
-    badgeText: "text-[#5B21B6] dark:text-[#C4B5FD]",
-    borderColor: "hover:border-[#8B5CF6]/60",
+    name: "Video & Audio",
+    color: "#B9A6FF",
+    bgTint: "#E6DFFF",
+    bgLight: "bg-[#E6DFFF] dark:bg-[#B9A6FF]/18",
+    textLight: "text-[#7B5FD6] dark:text-[#C8BAFF]",
+    badgeBg: "bg-[#E6DFFF] dark:bg-[#B9A6FF]/20",
+    badgeText: "text-[#5A3FB8] dark:text-[#D4C9FF]",
+    borderColor: "hover:border-[#B9A6FF]",
   },
   text: {
-    name: "Text and Writing",
-    color: "#3B82F6",
-    bgSoft: "#DBEAFE",
-    bgLight: "bg-[#DBEAFE] dark:bg-[#3B82F6]/15",
-    textLight: "text-[#2563EB] dark:text-[#60A5FA]",
-    badgeBg: "bg-[#DBEAFE] dark:bg-blue-950/40",
-    badgeText: "text-[#1E40AF] dark:text-[#93C5FD]",
-    borderColor: "hover:border-[#3B82F6]/60",
+    name: "Text & Writing",
+    color: "#2B4DFF",
+    bgTint: "#D9E3FF",
+    bgLight: "bg-[#D9E3FF] dark:bg-[#2B4DFF]/18",
+    textLight: "text-[#2B4DFF] dark:text-[#6B8AFF]",
+    badgeBg: "bg-[#D9E3FF] dark:bg-[#2B4DFF]/20",
+    badgeText: "text-[#1A30B8] dark:text-[#96AEFF]",
+    borderColor: "hover:border-[#2B4DFF]",
   },
   converters: {
     name: "Converters",
-    color: "#F97316",
-    bgSoft: "#FFEDD5",
-    bgLight: "bg-[#FFEDD5] dark:bg-[#F97316]/15",
-    textLight: "text-[#EA580C] dark:text-[#FB923C]",
-    badgeBg: "bg-[#FFEDD5] dark:bg-orange-950/40",
-    badgeText: "text-[#9A3412] dark:text-[#FDBA74]",
-    borderColor: "hover:border-[#F97316]/60",
+    color: "#FFC933",
+    bgTint: "#FFE9C2",
+    bgLight: "bg-[#FFE9C2] dark:bg-[#FFC933]/18",
+    textLight: "text-[#B88A10] dark:text-[#FFD966]",
+    badgeBg: "bg-[#FFE9C2] dark:bg-[#FFC933]/20",
+    badgeText: "text-[#8A6810] dark:text-[#FFE18A]",
+    borderColor: "hover:border-[#FFC933]",
   },
   developer: {
     name: "Developer Tools",
-    color: "#475569",
-    bgSoft: "#E2E8F0",
-    bgLight: "bg-[#E2E8F0] dark:bg-[#475569]/25",
-    textLight: "text-[#334155] dark:text-[#94A3B8]",
-    badgeBg: "bg-[#E2E8F0] dark:bg-slate-800",
-    badgeText: "text-[#1E293B] dark:text-[#CBD5E1]",
-    borderColor: "hover:border-[#475569]/60",
+    color: "#5C564E",
+    bgTint: "#E4E0D6",
+    bgLight: "bg-[#E4E0D6] dark:bg-[#F3EFE4]/10",
+    textLight: "text-[#3D3830] dark:text-[#B5AFA5]",
+    badgeBg: "bg-[#E4E0D6] dark:bg-[#F3EFE4]/10",
+    badgeText: "text-[#2A2520] dark:text-[#C8C2B8]",
+    borderColor: "hover:border-[#5C564E]",
   },
   calculators: {
     name: "Calculators",
     color: "#14B8A6",
-    bgSoft: "#CCFBF1",
-    bgLight: "bg-[#CCFBF1] dark:bg-[#14B8A6]/15",
-    textLight: "text-[#0D9488] dark:text-[#2DD4BF]",
-    badgeBg: "bg-[#CCFBF1] dark:bg-teal-950/40",
-    badgeText: "text-[#115E59] dark:text-[#5EEAD4]",
-    borderColor: "hover:border-[#14B8A6]/60",
+    bgTint: "#CFF3EE",
+    bgLight: "bg-[#CFF3EE] dark:bg-[#2ED47A]/15",
+    textLight: "text-[#0D9488] dark:text-[#5EEAD4]",
+    badgeBg: "bg-[#CFF3EE] dark:bg-[#14B8A6]/18",
+    badgeText: "text-[#0E7B6E] dark:text-[#6EF0DB]",
+    borderColor: "hover:border-[#14B8A6]",
   },
   seo: {
-    name: "SEO and Web",
+    name: "SEO & Web",
     color: "#EC4899",
-    bgSoft: "#FCE7F3",
-    bgLight: "bg-[#FCE7F3] dark:bg-[#EC4899]/15",
+    bgTint: "#FFD6EC",
+    bgLight: "bg-[#FFD6EC] dark:bg-[#EC4899]/18",
     textLight: "text-[#DB2777] dark:text-[#F472B6]",
-    badgeBg: "bg-[#FCE7F3] dark:bg-pink-950/40",
+    badgeBg: "bg-[#FFD6EC] dark:bg-[#EC4899]/20",
     badgeText: "text-[#9D174D] dark:text-[#F9A8D4]",
-    borderColor: "hover:border-[#EC4899]/60",
+    borderColor: "hover:border-[#EC4899]",
   },
 };
 
 export function getCategoryTheme(category: string): CategoryTheme {
   const cat = category.toLowerCase();
 
-  if (cat.includes("pdf")) return AURORA_CATEGORIES.pdf;
-  if (cat.includes("image") || cat.includes("svg") || cat.includes("photo")) return AURORA_CATEGORIES.image;
-  if (cat.includes("video") || cat.includes("audio") || cat.includes("media") || cat.includes("speech") || cat.includes("record")) return AURORA_CATEGORIES.video;
-  if (cat.includes("calc") || cat.includes("age") || cat.includes("emi") || cat.includes("percentage") || cat.includes("unit")) return AURORA_CATEGORIES.calculators;
-  if (cat.includes("seo") || cat.includes("web") || cat.includes("sitemap") || cat.includes("robots") || cat.includes("og")) return AURORA_CATEGORIES.seo;
-  if (cat.includes("text") || cat.includes("writing") || cat.includes("ocr") || cat.includes("ai") || cat.includes("chat") || cat.includes("notes")) return AURORA_CATEGORIES.text;
-  if (cat.includes("convert") || cat.includes("business") || cat.includes("invoice") || cat.includes("receipt") || cat.includes("qr") || cat.includes("barcode")) return AURORA_CATEGORIES.converters;
+  if (cat.includes("pdf")) return TOOLBENCH_CATEGORIES.pdf;
+  if (cat.includes("image") || cat.includes("svg") || cat.includes("photo")) return TOOLBENCH_CATEGORIES.image;
+  if (cat.includes("video") || cat.includes("audio") || cat.includes("media") || cat.includes("speech") || cat.includes("record")) return TOOLBENCH_CATEGORIES.video;
+  if (cat.includes("calc") || cat.includes("age") || cat.includes("emi") || cat.includes("percentage") || cat.includes("unit")) return TOOLBENCH_CATEGORIES.calculators;
+  if (cat.includes("seo") || cat.includes("web") || cat.includes("sitemap") || cat.includes("robots") || cat.includes("og") || cat.includes("favicon")) return TOOLBENCH_CATEGORIES.seo;
+  if (cat.includes("text") || cat.includes("writing") || cat.includes("ocr") || cat.includes("ai") || cat.includes("chat") || cat.includes("notes")) return TOOLBENCH_CATEGORIES.text;
+  if (cat.includes("convert") || cat.includes("business") || cat.includes("invoice") || cat.includes("receipt") || cat.includes("qr") || cat.includes("barcode")) return TOOLBENCH_CATEGORIES.converters;
 
-  return AURORA_CATEGORIES.developer;
+  return TOOLBENCH_CATEGORIES.developer;
 }

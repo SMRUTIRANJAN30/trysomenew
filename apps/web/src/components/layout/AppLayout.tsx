@@ -28,8 +28,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       document.title = "Tools Directory — 170+ Document & Productivity Tools | trysomenew";
       return;
     }
-    if (pathname === "/roadmap") {
-      document.title = "Platform Roadmap & Phase 3 Live — trysomenew";
+    if (pathname === "/beam") {
+      document.title = "Beam — Instant Device Pairing & Live Clipboard | trysomenew";
       return;
     }
     if (pathname === "/about") {
@@ -43,7 +43,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] selection:bg-blue-500/30 selection:text-blue-500 transition-colors duration-200">
+    <div className="flex flex-col min-h-screen w-full bg-[var(--paper)] text-[var(--ink)] selection:bg-[var(--pine-tint)] selection:text-[var(--pine)] transition-colors duration-150">
       <Header onOpenCommandPalette={() => setIsCommandPaletteOpen(true)} />
       <main className="flex-1 w-full pb-16 sm:pb-0">{children}</main>
       <Footer />

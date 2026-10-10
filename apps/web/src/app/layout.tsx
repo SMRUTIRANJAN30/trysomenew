@@ -1,18 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Fraunces, Public_Sans, IBM_Plex_Mono } from "next/font/google";
 import { AppLayout } from "@/components/layout/AppLayout";
 import "./globals.css";
 
-const inter = Inter({
+const publicSans = Public_Sans({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
 });
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
+  weight: ["600"],
   variable: "--font-heading",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://trysomenew.com";
@@ -180,7 +189,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} ${plusJakartaSans.variable} min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] font-sans antialiased transition-colors duration-200`}>
+      <body className={`${publicSans.variable} ${fraunces.variable} ${ibmPlexMono.variable} min-h-screen bg-[var(--paper)] text-[var(--ink)] font-sans antialiased transition-colors duration-150`}>
         <AppLayout>{children}</AppLayout>
       </body>
     </html>
