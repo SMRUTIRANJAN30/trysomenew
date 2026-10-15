@@ -114,6 +114,9 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+  verification: {
+    google: "YHrJsSDnt1l-728tmcUebnjKjgIaAzPesGqNdTOg0e8",
+  },
 };
 
 export const viewport: Viewport = {
@@ -164,6 +167,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="google-site-verification" content="YHrJsSDnt1l-728tmcUebnjKjgIaAzPesGqNdTOg0e8" />
         <meta name="color-scheme" content="dark light" />
         <script
           type="application/ld+json"
