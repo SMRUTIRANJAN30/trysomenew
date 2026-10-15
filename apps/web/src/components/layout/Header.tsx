@@ -11,6 +11,7 @@ import {
   X,
   Radio,
   User,
+  Download,
 } from "lucide-react";
 import { Logo } from "@/components/common/Logo";
 import { MegaMenu } from "./MegaMenu";
