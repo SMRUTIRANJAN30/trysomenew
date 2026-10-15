@@ -168,6 +168,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="google-site-verification" content="YHrJsSDnt1l-728tmcUebnjKjgIaAzPesGqNdTOg0e8" />
+        <meta name="google-site-verification" content="google92f69f2009533ddb" />
+        <meta name="google-site-verification" content="92f69f2009533ddb" />
         <meta name="color-scheme" content="dark light" />
         <script
           type="application/ld+json"
