@@ -29,6 +29,11 @@ const SYNONYMS_MAP: Record<string, string[]> = {
   "invoice-generator": ["bill maker", "create bill", "invoice pdf", "freelance invoice", "client bill"],
   "screen-recorder": ["screen capture", "record screen", "capture monitor", "record video"],
   "beam": ["online clipboard", "send to phone", "sync clipboard", "phone to pc", "quick share"],
+  "universal-downloader": ["download link", "video downloader", "media downloader", "file downloader", "save video", "download video"],
+  "terabox-downloader": ["terabox download", "terabox", "terabox link", "terabox bypass", "tera box"],
+  "youtube-downloader": ["youtube download", "youtube to mp3", "youtube mp4", "yt download", "yt to mp3"],
+  "instagram-downloader": ["instagram download", "insta reels download", "instagram reel saver", "ig download"],
+  "tiktok-downloader": ["tiktok download", "tiktok no watermark", "tiktok video download", "tt download"],
 };
 
 function normalize(str: string): string {
@@ -55,6 +60,16 @@ export function searchTools(query: string, limit = 8): { items: SearchItem[]; qu
 
   // 1. Search action commands
   const actions: SearchAction[] = [
+    {
+      id: "action-download",
+      name: "Open Media & Link Downloader (TeraBox, YT, Insta, TikTok)",
+      category: "Action",
+      icon: "Download",
+      action: () => {
+        if (typeof window !== "undefined") window.location.href = "/download";
+      },
+      shortcut: "D",
+    },
     {
       id: "action-beam",
       name: "Open Beam Live Clipboard",

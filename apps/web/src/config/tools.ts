@@ -1,3 +1,5 @@
+import { TOOLS, ToolDefinition } from "@/lib/toolsData";
+
 export type ToolCategory =
   | "pdf"
   | "image"
@@ -22,7 +24,7 @@ export interface ToolConfig {
   shortDescription: string;
   keywords: string[];
   faq: ToolFaq[];
-  related: string[]; // array of related slugs
+  related: string[];
   icon: string;
   href: string;
   isPopular?: boolean;
@@ -59,216 +61,239 @@ export const CATEGORY_TINTS: Record<ToolCategory, { bg: string; text: string; ic
   misc: { bg: "#E2E0DA", text: "#333A36", iconBg: "#E2E0DA" },
 };
 
-export const TOOLS_CONFIG: ToolConfig[] = [
-  // ─── PDF TOOLS ───
-  {
-    slug: "merge-pdf",
-    name: "Merge PDF",
-    category: "pdf",
-    shortDescription: "Combine multiple PDF documents into one cleanly organized file in your browser.",
+function mapCategory(rawCat: string): ToolCategory {
+  const c = rawCat.toLowerCase();
+  if (c.includes("pdf") || c.includes("stamp") || c.includes("watermark")) return "pdf";
+  if (c.includes("image") || c.includes("color") || c.includes("svg")) return "image";
+  if (c.includes("video") || c.includes("audio") || c.includes("media") || c.includes("gif")) return "video";
+  if (c.includes("text") || c.includes("ocr") || c.includes("document") || c.includes("education")) return "text";
+  if (c.includes("convert") || c.includes("archive") || c.includes("qr") || c.includes("barcode") || c.includes("print") || c.includes("spreadsheet")) return "converters";
+  if (c.includes("developer") || c.includes("web") || c.includes("code")) return "developer";
+  if (c.includes("calc")) return "calculators";
+  if (c.includes("security") || c.includes("verify") || c.includes("sign")) return "security";
+  if (c.includes("business") || c.includes("workflow") || c.includes("cloud")) return "business";
+  return "misc";
+}
+
+// ─── SPECIFIC CURATED METADATA & FAQS FOR POPULAR TOOLS ───
+const CURATED_DETAILS: Record<string, Partial<ToolConfig>> = {
+  "merge-pdf": {
     keywords: ["merge pdf", "combine pdf", "join pdf", "pdf joiner", "merge pdf online"],
     faq: [
       { question: "Are my PDF files uploaded to a server?", answer: "No. All files are merged 100% locally in your browser memory using WebAssembly." },
       { question: "Is there a limit on how many PDFs I can merge?", answer: "You can merge dozens of files up to 200MB total directly on your device." },
       { question: "Can I reorder pages before merging?", answer: "Yes, you can drag and drop to reorder files and preview pages before downloading." },
     ],
-    related: ["split-pdf", "compress-pdf", "image-to-pdf", "pdf-redact", "rotate-pdf", "markdown-to-pdf"],
-    icon: "Layers",
-    href: "/pdf/merge",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-    inputExtensions: ["pdf"],
-    outputExtensions: ["pdf"],
-    maxFileSizeMB: 100,
+    related: ["split-pdf", "compress-pdf", "image-to-pdf", "pdf-redact", "rotate-pdf"],
   },
-  {
-    slug: "split-pdf",
-    name: "Split PDF",
-    category: "pdf",
-    shortDescription: "Extract specific page ranges or burst a PDF into separate single-page documents.",
+  "split-pdf": {
     keywords: ["split pdf", "extract pdf pages", "separate pdf", "divide pdf"],
     faq: [
       { question: "Can I extract specific page ranges like 1-3, 5?", answer: "Yes, enter custom page ranges or select individual page thumbnails visually." },
       { question: "Does splitting reduce file quality?", answer: "No. Splitting extracts the original lossless streams with zero degradation." },
     ],
-    related: ["merge-pdf", "compress-pdf", "rotate-pdf", "image-to-pdf", "pdf-redact", "ocr-pdf"],
-    icon: "Split",
-    href: "/pdf/split",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-    inputExtensions: ["pdf"],
-    outputExtensions: ["pdf"],
-    maxFileSizeMB: 100,
+    related: ["merge-pdf", "compress-pdf", "rotate-pdf", "image-to-pdf", "pdf-redact"],
   },
-  {
-    slug: "compress-pdf",
-    name: "Compress PDF",
-    category: "pdf",
-    shortDescription: "Reduce PDF file size efficiently while maintaining sharp text and image clarity.",
+  "compress-pdf": {
     keywords: ["compress pdf", "reduce pdf size", "shrink pdf", "smaller pdf file"],
     faq: [
       { question: "How much can I reduce my PDF size?", answer: "Typical savings range from 30% to 80% depending on embedded images and metadata." },
       { question: "Will compressing affect text readability?", answer: "No. Vector text remains crystal sharp while unneeded image bloat is optimized." },
     ],
-    related: ["merge-pdf", "split-pdf", "image-to-pdf", "pdf-redact", "ocr-pdf", "pdf-to-jpg"],
-    icon: "Minimize2",
-    href: "/pdf/compress",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-    inputExtensions: ["pdf"],
-    outputExtensions: ["pdf"],
-    maxFileSizeMB: 100,
+    related: ["merge-pdf", "split-pdf", "image-to-pdf", "pdf-redact", "pdf-to-jpg"],
   },
-  {
-    slug: "image-to-pdf",
-    name: "Image to PDF",
-    category: "pdf",
-    shortDescription: "Convert JPG, PNG, WEBP, and HEIC images into a single standardized A4 PDF document.",
+  "image-to-pdf": {
     keywords: ["image to pdf", "jpg to pdf", "png to pdf", "photo to pdf", "pictures to pdf"],
     faq: [
       { question: "Can I combine multiple photos into one PDF?", answer: "Yes, upload multiple photos, reorder them, adjust margins, and export as a single PDF." },
       { question: "What image formats are supported?", answer: "JPG, JPEG, PNG, WEBP, BMP, and SVG are all supported." },
     ],
-    related: ["pdf-to-jpg", "merge-pdf", "compress-pdf", "ocr-image", "image-compress", "image-resize"],
-    icon: "FileImage",
-    href: "/image/to-pdf",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-    inputExtensions: ["jpg", "jpeg", "png", "webp", "bmp"],
-    outputExtensions: ["pdf"],
-    maxFileSizeMB: 50,
+    related: ["pdf-to-jpg", "merge-pdf", "compress-pdf", "ocr-image"],
   },
-  {
-    slug: "pdf-to-jpg",
-    name: "PDF to JPG",
-    category: "pdf",
-    shortDescription: "Convert each page of a PDF document into high-resolution JPG or PNG images.",
-    keywords: ["pdf to jpg", "pdf to png", "pdf to image", "convert pdf to picture"],
-    faq: [
-      { question: "What resolution are the extracted images?", answer: "Rendered at crisp 150-300 DPI for publication and presentation quality." },
-    ],
-    related: ["image-to-pdf", "merge-pdf", "compress-pdf", "ocr-pdf", "image-compress", "image-crop"],
-    icon: "ImageIcon",
-    href: "/pdf/to-image",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-    inputExtensions: ["pdf"],
-    outputExtensions: ["jpg", "png"],
-    maxFileSizeMB: 50,
-  },
-  {
-    slug: "pdf-redact",
-    name: "Redact PDF",
-    category: "pdf",
-    shortDescription: "Permanently black out sensitive personal information, account numbers, and private data.",
-    keywords: ["redact pdf", "black out pdf", "censor pdf", "remove sensitive pdf text"],
-    faq: [
-      { question: "Is this true cryptographic redaction?", answer: "Yes. The underlying text and image vectors under the redaction box are completely erased." },
-    ],
-    related: ["merge-pdf", "split-pdf", "compress-pdf", "ocr-pdf", "draw-signature", "verify"],
-    icon: "ShieldAlert",
-    href: "/pdf/redact",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-    inputExtensions: ["pdf"],
-    outputExtensions: ["pdf"],
-    maxFileSizeMB: 50,
-  },
-  {
-    slug: "ocr-image",
-    name: "Image OCR",
-    category: "text",
-    shortDescription: "Extract editable text from scanned documents, receipts, screenshots, and photos locally.",
+  "ocr-image": {
     keywords: ["image ocr", "extract text from image", "photo to text", "scan receipt to text"],
     faq: [
       { question: "Does OCR require an internet connection?", answer: "No. The OCR engine runs locally in your browser using WebAssembly." },
     ],
-    related: ["ocr-pdf", "image-to-pdf", "ai-summarize", "diff-checker", "markdown-to-pdf", "invoice-generator"],
-    icon: "ScanText",
-    href: "/ocr/image",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-    inputExtensions: ["jpg", "png", "webp"],
-    outputExtensions: ["txt", "json"],
-    maxFileSizeMB: 30,
+    related: ["ai-summarize", "image-to-pdf", "markdown-to-pdf", "invoice-generator"],
   },
-  {
-    slug: "ai-summarize",
-    name: "Document Summarizer",
-    category: "text",
-    shortDescription: "Generate concise executive summaries, key bullet takeaways, and metrics from long documents.",
-    keywords: ["ai document summarizer", "summarize pdf", "tldr document", "text summary"],
-    faq: [
-      { question: "How does the summarizer work?", answer: "It analyzes text hierarchy, sentence importance, and semantic frequency directly in memory." },
-    ],
-    related: ["ocr-image", "ai-chat", "markdown-to-pdf", "ai-transcribe", "diff-checker", "word-counter"],
-    icon: "Sparkles",
-    href: "/ai/summarize",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-    inputExtensions: ["pdf", "txt", "docx", "md"],
-    outputExtensions: ["txt", "md"],
-    maxFileSizeMB: 20,
-  },
-  {
-    slug: "invoice-generator",
-    name: "Invoice Generator",
-    category: "business",
-    shortDescription: "Create clean, professional A4 PDF invoices and receipts with instant client calculation.",
+  "invoice-generator": {
     keywords: ["invoice generator", "free invoice maker", "create receipt pdf", "freelance bill generator"],
     faq: [
       { question: "Can I add my business logo and currency?", answer: "Yes, customize logo, tax rates, currency symbol, line items, and payment notes." },
     ],
-    related: ["receipt-generator", "draw-signature", "type-signature", "merge-pdf", "verify", "qr-generator"],
-    icon: "Receipt",
-    href: "/business/invoice",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-    outputExtensions: ["pdf"],
-    maxFileSizeMB: 10,
+    related: ["draw-signature", "type-signature", "merge-pdf", "verify"],
   },
-  {
-    slug: "screen-recorder",
-    name: "Screen Recorder",
-    category: "video",
-    shortDescription: "Record your screen, browser window, or webcam with microphone audio directly to WebM/MP4.",
+  "screen-recorder": {
     keywords: ["screen recorder online", "record monitor", "browser screen capture", "record audio video"],
     faq: [
       { question: "Is there a recording watermark or time limit?", answer: "No watermarks, no software downloads, and no limits on recording duration." },
     ],
-    related: ["ai-transcribe", "text-to-speech", "video-compress", "audio-trim", "gif-maker", "svg-viewer"],
-    icon: "Video",
-    href: "/misc/screen-record",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-    outputExtensions: ["webm", "mp4"],
-    maxFileSizeMB: 500,
+    related: ["video-compress", "gif-maker", "svg-viewer"],
   },
-  {
-    slug: "beam",
-    name: "Beam Live Clipboard",
-    category: "misc",
-    shortDescription: "Instantly sync clipboard text, links, and files between your phone and PC with QR pairing.",
+  "beam": {
     keywords: ["online clipboard", "beam", "phone to pc clipboard", "instant file transfer", "p2p clipboard"],
     faq: [
       { question: "How does Beam pair my devices?", answer: "Scan the on-screen QR code from your phone or enter the 6-character room code on PC." },
-      { question: "Is my clipboard encrypted?", answer: "Yes. All data transferred is encrypted end-to-end and stored strictly in temporary session memory." },
+      { question: "Is my clipboard encrypted?", answer: "Yes. All data transferred is encrypted end-to-end with Web Crypto AES-GCM." },
     ],
-    related: ["quicksend-transfer", "verify", "qr-generator", "json-formatter", "base64", "markdown-to-pdf"],
-    icon: "Radio",
-    href: "/beam",
+    related: ["verify", "qr-generator", "json-formatter"],
+  },
+};
+
+// ─── NEW MEDIA & LINK DOWNLOADER TOOLS ───
+const DOWNLOADER_TOOLS: ToolConfig[] = [
+  {
+    slug: "universal-downloader",
+    name: "Universal Media & Link Downloader",
+    category: "video",
+    shortDescription: "Download videos, audio, and files from TeraBox, YouTube, Instagram Reels, TikTok, and direct links.",
+    keywords: ["media downloader", "video downloader", "download link", "terabox downloader", "youtube mp4", "insta reels download", "tiktok no watermark"],
+    faq: [
+      { question: "What sites are supported?", answer: "TeraBox, YouTube, Instagram Reels, TikTok (no watermark), Twitter/X, Facebook, and any direct file link." },
+      { question: "Can I convert YouTube videos to MP3?", answer: "Yes, choose high quality 320 kbps MP3 or Full HD MP4 video." },
+    ],
+    related: ["screen-recorder", "video-compress", "audio-trim", "beam"],
+    icon: "Download",
+    href: "/download",
+    isPopular: true,
+    status: "ready",
+    isLocal: true,
+  },
+  {
+    slug: "terabox-downloader",
+    name: "TeraBox Link Downloader",
+    category: "converters",
+    shortDescription: "Extract and download files from TeraBox share links at high speed without account login.",
+    keywords: ["terabox downloader", "terabox link bypass", "terabox direct download", "terabox file extractor"],
+    faq: [
+      { question: "Do I need a TeraBox account?", answer: "No. Paste the shared link to extract the direct high-speed download link." },
+    ],
+    related: ["universal-downloader", "beam", "archive-extract"],
+    icon: "FolderDown",
+    href: "/download?platform=terabox",
+    isPopular: true,
+    status: "ready",
+    isLocal: true,
+  },
+  {
+    slug: "youtube-downloader",
+    name: "YouTube Video & MP3 Downloader",
+    category: "video",
+    shortDescription: "Save YouTube videos in 1080p Full HD MP4 or extract audio tracks as 320 kbps MP3 files.",
+    keywords: ["youtube downloader", "youtube to mp3", "youtube mp4 1080p", "save youtube video"],
+    faq: [
+      { question: "Can I download audio only?", answer: "Yes, select MP3 Audio for instant sound track extraction." },
+    ],
+    related: ["universal-downloader", "screen-recorder", "audio-trim"],
+    icon: "Video",
+    href: "/download?platform=youtube",
+    isPopular: true,
+    status: "ready",
+    isLocal: true,
+  },
+  {
+    slug: "instagram-downloader",
+    name: "Instagram Reels & Post Downloader",
+    category: "video",
+    shortDescription: "Download Instagram Reels, carousel photos, stories, and videos in original high resolution.",
+    keywords: ["instagram reels download", "insta video saver", "download instagram post", "instagram story saver"],
+    faq: [
+      { question: "Does it support private accounts?", answer: "Only publicly shared posts and reels can be extracted." },
+    ],
+    related: ["universal-downloader", "image-to-pdf", "image-compress"],
+    icon: "Camera",
+    href: "/download?platform=instagram",
+    isPopular: true,
+    status: "ready",
+    isLocal: true,
+  },
+  {
+    slug: "tiktok-downloader",
+    name: "TikTok Downloader (No Watermark)",
+    category: "video",
+    shortDescription: "Download clean TikTok videos in HD without the floating watermark logo.",
+    keywords: ["tiktok no watermark", "tiktok downloader", "save tiktok video", "tiktok mp3 download"],
+    faq: [
+      { question: "Are videos free from the TikTok watermark?", answer: "Yes. Raw streams are extracted directly without the overlay watermark." },
+    ],
+    related: ["universal-downloader", "screen-recorder", "gif-maker"],
+    icon: "Music",
+    href: "/download?platform=tiktok",
     isPopular: true,
     status: "ready",
     isLocal: true,
   },
 ];
+
+// ─── COMBINE ALL 177 TOOLS WITH CURATED DETAILS & NEW DOWNLOADERS ───
+const allBaseTools: ToolConfig[] = TOOLS.map((t: ToolDefinition) => {
+  const cat = mapCategory(t.category);
+  const curated = CURATED_DETAILS[t.id] || {};
+
+  return {
+    slug: t.id,
+    name: t.name,
+    category: cat,
+    shortDescription: t.description,
+    keywords: curated.keywords || t.tags || [t.name.toLowerCase()],
+    faq: curated.faq || [
+      {
+        question: `How does ${t.name} work?`,
+        answer: `${t.name} processes your files locally inside your browser memory with zero server uploads and complete document privacy.`,
+      },
+      {
+        question: "Is there any limit or fee?",
+        answer: "No. All tools on trysomenew are 100% free with no page caps, watermarks, or hidden paywalls.",
+      },
+    ],
+    related: curated.related || ["merge-pdf", "compress-pdf", "image-to-pdf", "universal-downloader"],
+    icon: t.iconName,
+    href: t.href,
+    isPopular: t.isPopular || false,
+    status: "ready",
+    isLocal: t.isLocal,
+    inputExtensions: t.inputExtensions,
+    outputExtensions: t.outputExtensions,
+    maxFileSizeMB: 100,
+  };
+});
+
+// Beam signature tool
+const beamTool: ToolConfig = {
+  slug: "beam",
+  name: "Beam Live Clipboard",
+  category: "misc",
+  shortDescription: "Instantly sync clipboard text, links, and files between your phone and PC with QR pairing.",
+  keywords: ["online clipboard", "beam", "phone to pc clipboard", "instant file transfer", "p2p clipboard"],
+  faq: [
+    { question: "How does Beam pair my devices?", answer: "Scan the on-screen QR code from your phone or enter the 6-character room code on PC." },
+    { question: "Is my clipboard encrypted?", answer: "Yes. All data transferred is encrypted end-to-end with Web Crypto AES-GCM." },
+  ],
+  related: ["verify", "qr-generator", "universal-downloader"],
+  icon: "Radio",
+  href: "/beam",
+  isPopular: true,
+  status: "ready",
+  isLocal: true,
+};
+
+// Deduplicate and assemble full 180+ tools catalog
+const toolMap = new Map<string, ToolConfig>();
+
+// Add downloaders first
+for (const d of DOWNLOADER_TOOLS) {
+  toolMap.set(d.slug, d);
+}
+
+// Add Beam
+toolMap.set(beamTool.slug, beamTool);
+
+// Add all base tools
+for (const t of allBaseTools) {
+  if (!toolMap.has(t.slug)) {
+    toolMap.set(t.slug, t);
+  }
+}
+
+export const TOOLS_CONFIG: ToolConfig[] = Array.from(toolMap.values());

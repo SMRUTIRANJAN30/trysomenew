@@ -83,6 +83,19 @@ export function Header({ onOpenCommandPalette }: HeaderProps) {
               <Search className="w-5 h-5" />
             </button>
 
+            {/* Downloader Link */}
+            <Link
+              href="/download"
+              className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-[6px] transition-colors ${
+                pathname === "/download"
+                  ? "text-[var(--pine)] bg-[var(--pine-tint)]"
+                  : "text-[var(--ink)] hover:bg-[var(--sunken)] hover:text-[var(--pine)]"
+              }`}
+            >
+              <Download className="w-4 h-4 text-[var(--pine)]" />
+              <span>Downloader</span>
+            </Link>
+
             {/* Beam Signature Link */}
             <Link
               href="/beam"
@@ -151,7 +164,15 @@ export function Header({ onOpenCommandPalette }: HeaderProps) {
               onClick={() => setMobileDrawerOpen(false)}
               className="block px-3 py-2 text-sm font-semibold rounded-[6px] bg-[var(--pine-tint)] text-[var(--pine)]"
             >
-              All 177+ Tools Directory
+              All 180+ Tools Directory
+            </Link>
+            <Link
+              href="/download"
+              onClick={() => setMobileDrawerOpen(false)}
+              className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-[6px] hover:bg-[var(--sunken)] text-[var(--ink)]"
+            >
+              <span>Media & Link Downloader</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[var(--pine-tint)] text-[var(--pine)]">TeraBox & YT</span>
             </Link>
             <Link
               href="/beam"

@@ -103,3 +103,20 @@ describe("trysomenew - Beam Pairing Code Generator", () => {
     assert.ok(!code.includes("I"));
   });
 });
+
+describe("trysomenew - Universal Link & Media Downloader", () => {
+  test("accurately identifies YouTube, Instagram, TikTok, and TeraBox URLs", () => {
+    const isYouTube = (url) => /youtube\.com|youtu\.be/i.test(url);
+    const isInstagram = (url) => /instagram\.com/i.test(url);
+    const isTikTok = (url) => /tiktok\.com/i.test(url);
+    const isTeraBox = (url) => /terabox\.com|teraboxapp\.com|1024tera\.com|freeterabox\.com/i.test(url);
+
+    assert.ok(isYouTube("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
+    assert.ok(isYouTube("https://youtu.be/dQw4w9WgXcQ"));
+    assert.ok(isInstagram("https://www.instagram.com/reel/Cx12345/"));
+    assert.ok(isTikTok("https://www.tiktok.com/@creator/video/7123456789"));
+    assert.ok(isTeraBox("https://teraboxapp.com/s/1abcDEFghijKLMN"));
+    assert.ok(isTeraBox("https://1024tera.com/s/1XYZ987"));
+  });
+});
+

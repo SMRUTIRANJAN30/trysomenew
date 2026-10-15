@@ -25,11 +25,12 @@ export default function HomePage() {
   };
 
   const popularChips = [
+    { label: "Media Downloader", href: "/download" },
+    { label: "TeraBox Downloader", href: "/download?platform=terabox" },
     { label: "Merge PDF", href: "/pdf/merge" },
     { label: "Compress PDF", href: "/pdf/compress" },
     { label: "JPG to PDF", href: "/image/to-pdf" },
     { label: "Image OCR", href: "/ocr/image" },
-    { label: "Redact PDF", href: "/pdf/redact" },
     { label: "Invoice Generator", href: "/business/invoice" },
   ];
 

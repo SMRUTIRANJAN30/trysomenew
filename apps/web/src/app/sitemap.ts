@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const coreRoutes = [
     { path: "", priority: 1.0, changeFrequency: "daily" as const },
     { path: "/tools", priority: 0.95, changeFrequency: "daily" as const },
+    { path: "/download", priority: 0.95, changeFrequency: "daily" as const },
     { path: "/beam", priority: 0.95, changeFrequency: "daily" as const },
     { path: "/dashboard", priority: 0.9, changeFrequency: "daily" as const },
     { path: "/ilovepdf-alternative", priority: 0.85, changeFrequency: "weekly" as const },

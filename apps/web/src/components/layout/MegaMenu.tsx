@@ -63,14 +63,12 @@ export function MegaMenu() {
     {
       id: "converters",
       title: "Converters & Dev",
-      tools: [
+        { name: "Media Downloader", href: "/download", badge: "New" },
         { name: "Invoice Generator", href: "/business/invoice" },
         { name: "Screen Recorder", href: "/misc/screen-record" },
         { name: "JSON Formatter", href: "/developer/json" },
         { name: "QR Code Maker", href: "/qr/generator" },
-        { name: "SHA-256 Verifier", href: "/verify" },
-        { name: "Beam Live Sync", href: "/beam", badge: "New" },
-      ],
+        { name: "Beam Live Sync", href: "/beam", badge: "Live" },
     },
   ];
 

@@ -26,8 +26,9 @@ apps/web/
 │   │   ├── globals.css         # Paper & Pine CSS variables & Tailwind tokens
 │   │   ├── page.tsx            # Left-aligned workshop homepage
 │   │   ├── beam/               # Signature live clipboard feature
+│   │   ├── download/           # Universal Link & Media Downloader (TeraBox, YouTube, Instagram, TikTok)
 │   │   ├── dashboard/          # Redesigned workspace hub with IBM Plex Mono stats
-│   │   ├── tools/              # All 177+ tools directory
+│   │   ├── tools/              # All 180+ tools directory
 │   │   ├── pdf/                # PDF tools (merge, split, compress, redact...)
 │   │   ├── image/              # Image tools (image-to-pdf, compress, resize...)
 │   │   ├── blog/               # SEO How-to guides and tutorials

@@ -60,6 +60,11 @@ const nextConfig: NextConfig = {
       { source: "/online-clipboard", destination: "/beam" },
       { source: "/send-text-from-phone-to-pc", destination: "/beam" },
       { source: "/transfer-files-phone-to-pc", destination: "/beam" },
+      { source: "/terabox-downloader", destination: "/download?platform=terabox" },
+      { source: "/youtube-downloader", destination: "/download?platform=youtube" },
+      { source: "/instagram-downloader", destination: "/download?platform=instagram" },
+      { source: "/tiktok-downloader", destination: "/download?platform=tiktok" },
+      { source: "/media-downloader", destination: "/download" },
     ];
   },
 };
