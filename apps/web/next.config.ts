@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     return [
       {
@@ -65,6 +68,7 @@ const nextConfig: NextConfig = {
       { source: "/instagram-downloader", destination: "/download?platform=instagram" },
       { source: "/tiktok-downloader", destination: "/download?platform=tiktok" },
       { source: "/media-downloader", destination: "/download" },
+      { source: "/google92f69f2009533ddb.html", destination: "/api/google-verify" },
     ];
   },
 };

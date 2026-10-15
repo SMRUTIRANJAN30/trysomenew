@@ -115,7 +115,11 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
   },
   verification: {
-    google: "YHrJsSDnt1l-728tmcUebnjKjgIaAzPesGqNdTOg0e8",
+    google: [
+      "google92f69f2009533ddb",
+      "YHrJsSDnt1l-728tmcUebnjKjgIaAzPesGqNdTOg0e8",
+      "92f69f2009533ddb",
+    ],
   },
 };
 
@@ -167,9 +171,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="google-site-verification" content="YHrJsSDnt1l-728tmcUebnjKjgIaAzPesGqNdTOg0e8" />
-        <meta name="google-site-verification" content="google92f69f2009533ddb" />
-        <meta name="google-site-verification" content="92f69f2009533ddb" />
         <meta name="color-scheme" content="dark light" />
         <script
           type="application/ld+json"
