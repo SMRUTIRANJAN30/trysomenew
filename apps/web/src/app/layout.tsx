@@ -24,7 +24,7 @@ const ibmPlexMono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://trysomenew.com";
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://trysomenew.netlify.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

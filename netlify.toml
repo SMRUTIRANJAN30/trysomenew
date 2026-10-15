@@ -8,7 +8,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  NEXT_PUBLIC_APP_URL = "https://trysomenew.com"
+  NEXT_PUBLIC_APP_URL = "https://trysomenew.netlify.app"
   NEXT_PUBLIC_API_URL = "https://api.trysomenew.com"
   NEXT_PUBLIC_WS_URL = "wss://api.trysomenew.com"
 

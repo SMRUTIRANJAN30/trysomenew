@@ -3,7 +3,7 @@ import { TOOLS_CONFIG } from "@/config/tools";
 import { TOOLS } from "@/lib/toolsData";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://trysomenew.com";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://trysomenew.netlify.app";
   const now = new Date();
 
   // Core static & comparison pages
