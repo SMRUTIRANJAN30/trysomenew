@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>trysomenew — Official App Icon Export</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0E1411;
+      color: #F7F5F0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .card {
+      background: #17211C;
+      border: 1px solid #2B3A33;
+      border-radius: 20px;
+      padding: 2.5rem;
+      max-width: 580px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      color: #F7F5F0;
+    }
+    p {
+      color: #9EABA3;
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+    .icon-preview {
+      width: 256px;
+      height: 256px;
+      margin: 0 auto 2rem;
+      display: block;
+      filter: drop-shadow(0 14px 28px rgba(0,0,0,0.4));
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+    button, a.btn {
+      background: #1F5F4A;
+      color: white;
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    button:hover, a.btn:hover {
+      background: #25785E;
+      transform: translateY(-1px);
+    }
+    button.secondary, a.btn.secondary {
+      background: #212F28;
+      color: #E0E7E3;
+      border-color: #35473E;
+    }
+    button.secondary:hover, a.btn.secondary:hover {
+      background: #2C3E35;
+    }
+    canvas { display: none; }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      background: rgba(184, 67, 31, 0.2);
+      color: #E86C45;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">Official Brand Asset</span>
+    <h1>trysomenew App Icon</h1>
+    <p>High-resolution 512×512 icon for AlternativeTo, App Stores & Favicon</p>
+
+    <!-- Vector Icon Preview -->
+    <img id="iconImg" class="icon-preview" src="/app-icon.svg" alt="trysomenew App Icon" />
+
+    <div class="btn-group">
+      <button onclick="downloadPng(512)">
+        ⬇ Download 512×512 PNG
+      </button>
+      <button class="secondary" onclick="downloadPng(256)">
+        ⬇ Download 256×256 PNG
+      </button>
+      <a class="btn secondary" href="/app-icon.svg" download="trysomenew-icon.svg">
+        ⬇ Download SVG
+      </a>
+    </div>
+  </div>
+
+  <canvas id="exportCanvas"></canvas>
+
+  <script>
+    function downloadPng(size) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = function() {
+        const canvas = document.getElementById("exportCanvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        
+        const a = document.createElement("a");
+        a.download = "trysomenew-icon-" + size + "x" + size + ".png";
+        a.href = canvas.toDataURL("image/png");
+        a.click();
+      };
+      img.src = "/app-icon.svg";
+    }
+  </script>
+</body>
+</html>

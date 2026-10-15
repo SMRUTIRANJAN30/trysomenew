@@ -1,0 +1,78 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background Pine Gradient -->
+    <linearGradient id="bgPine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#246F57"/>
+      <stop offset="100%" stop-color="#144233"/>
+    </linearGradient>
+
+    <!-- Warm Paper Gradient -->
+    <linearGradient id="paperGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#EFEBE3"/>
+    </linearGradient>
+
+    <!-- Fold Corner Gradient -->
+    <linearGradient id="foldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5DEC9"/>
+      <stop offset="100%" stop-color="#C8BEA7"/>
+    </linearGradient>
+
+    <!-- Terracotta Energy Spark Gradient -->
+    <linearGradient id="terracottaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D9532B"/>
+      <stop offset="100%" stop-color="#A53818"/>
+    </linearGradient>
+
+    <!-- App Icon Drop Shadow -->
+    <filter id="iconShadow" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#071913" flood-opacity="0.38"/>
+    </filter>
+
+    <!-- Document Shadow -->
+    <filter id="docShadow" x="-15%" y="-10%" width="130%" height="130%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#05150F" flood-opacity="0.45"/>
+    </filter>
+
+    <!-- Spark Glow -->
+    <filter id="sparkGlow" x="-20%" y="-20%" width="140%" height="140%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#D9532B" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle Base with Deep Forest Pine -->
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#bgPine)" filter="url(#iconShadow)"/>
+
+  <!-- Subtle Inner Border Highlight -->
+  <rect x="25.5" y="25.5" width="461" height="461" rx="106.5" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.16"/>
+
+  <!-- Background Decorative Concentric Beam Arcs (Device Sync Motif) -->
+  <circle cx="360" cy="152" r="140" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.08" stroke-dasharray="6 8"/>
+  <circle cx="360" cy="152" r="95" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.12" stroke-dasharray="4 6"/>
+  <circle cx="360" cy="152" r="50" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.18"/>
+
+  <!-- Folded Document Body -->
+  <g filter="url(#docShadow)">
+    <!-- Document Base Sheet -->
+    <path d="M144 116 C144 102.745 154.745 92 168 92 H272 L368 188 V396 C368 409.255 357.255 420 344 420 H168 C154.745 420 144 409.255 144 396 V116 Z" fill="url(#paperGrad)"/>
+    
+    <!-- Top-Right Folded Corner -->
+    <path d="M272 92 V172 C272 180.837 279.163 188 288 188 H368 Z" fill="url(#foldGrad)"/>
+    <path d="M272 92 L368 188 H288 C279.163 188 272 180.837 272 172 V92 Z" fill="#000000" fill-opacity="0.08"/>
+
+    <!-- Subtle Document Text Grid Lines (Technical Workspace Aesthetic) -->
+    <rect x="184" y="232" width="144" height="8" rx="4" fill="#1E2421" fill-opacity="0.14"/>
+    <rect x="184" y="256" width="104" height="8" rx="4" fill="#1E2421" fill-opacity="0.14"/>
+    <rect x="184" y="280" width="128" height="8" rx="4" fill="#1E2421" fill-opacity="0.14"/>
+  </g>
+
+  <!-- Dynamic Energy Bolt / Instant Processing Spark (Terracotta) -->
+  <g filter="url(#sparkGlow)">
+    <path d="M266 172 L188 296 H250 L234 400 L324 268 H260 L278 172 H266 Z" fill="url(#terracottaGrad)"/>
+    <!-- Highlight Inner Flare -->
+    <path d="M264 176 L198 290 H252 L238 380 L310 274 H258 L274 176 H264 Z" fill="#FF7A50" fill-opacity="0.6"/>
+  </g>
+
+  <!-- Small Precision Crosshair Point -->
+  <circle cx="360" cy="152" r="5" fill="#E86C45"/>
+</svg>

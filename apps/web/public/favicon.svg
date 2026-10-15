@@ -1,21 +1,23 @@
-<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="favicon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#4F46E5" />
-      <stop offset="100%" stopColor="#7C3AED" />
+    <linearGradient id="favPine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#246F57"/>
+      <stop offset="100%" stop-color="#144233"/>
+    </linearGradient>
+    <linearGradient id="favSpark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E86C45"/>
+      <stop offset="100%" stop-color="#B8431F"/>
     </linearGradient>
   </defs>
-  <rect width="40" height="40" rx="10" fill="url(#favicon-grad)" />
-  <path
-    d="M13 10C13 8.89543 13.8954 8 15 8H21.5858C22.1162 8 22.6249 8.21071 22.9999 8.58579L26.4142 12C26.7893 12.3751 27 12.8838 27 13.4142V28C27 29.1046 26.1046 30 25 30H15C13.8954 30 13 29.1046 13 28V10Z"
-    fill="white"
-    fillOpacity="0.22"
-  />
-  <path
-    d="M21 10L14 20.5H20.5L19 30L26 19.5H19.5L21 10Z"
-    fill="white"
-    stroke="#4F46E5"
-    strokeWidth="0.5"
-    strokeLinejoin="round"
-  />
+
+  <!-- Squircle Base -->
+  <rect width="64" height="64" rx="15" fill="url(#favPine)"/>
+  <rect x="0.5" y="0.5" width="63" height="63" rx="14.5" stroke="#FFFFFF" stroke-opacity="0.16"/>
+
+  <!-- Folded Document Silhouette -->
+  <path d="M18 14C18 12.8954 18.8954 12 20 12H34L46 24V50C46 51.1046 45.1046 52 44 52H20C18.8954 52 18 51.1046 18 50V14Z" fill="#F7F5F0"/>
+  <path d="M34 12V22C34 23.1046 34.8954 24 36 24H46L34 12Z" fill="#DDD7CB"/>
+
+  <!-- Terracotta Bolt / Fast Action Symbol -->
+  <path d="M33 21L23 35H29.5L27 47L39 31H32L34.5 21H33Z" fill="url(#favSpark)"/>
 </svg>
