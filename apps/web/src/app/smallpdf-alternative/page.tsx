@@ -5,11 +5,11 @@ import { ShieldCheck, ArrowRight, Check } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 export const metadata: Metadata = {
-  title: "Smallpdf Alternative: Free Local Document Workspace | trysomenew",
+  title: "Smallpdf Alternative: Free Local Document Workspace",
   description:
     "An honest review comparing Smallpdf with trysomenew. Learn how zero-storage client processing eliminates paywalls and protects your file privacy.",
   alternates: {
-    canonical: "https://trysomenew.com/smallpdf-alternative",
+    canonical: "/smallpdf-alternative",
   },
 };
 
@@ -84,7 +84,7 @@ export default function SmallpdfAlternativePage() {
           </p>
           <p>
             trysomenew is architected on local-first principles. By offloading document processing directly to your browser,
-            we avoid expensive server compute bills, allowing us to keep all 177+ tools permanently free and unlimited.
+            we avoid expensive server compute bills, allowing us to keep all 100+ tools permanently free and unlimited.
           </p>
         </div>
 

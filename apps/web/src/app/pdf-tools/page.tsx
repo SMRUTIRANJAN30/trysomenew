@@ -7,11 +7,11 @@ import { ToolCard } from "@/components/common/ToolCard";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 export const metadata: Metadata = {
-  title: "Free Online PDF Tools: Merge, Compress, Split & Redact | trysomenew",
+  title: "Free PDF Tools: Merge, Compress, Split & Redact",
   description:
     "Private, in-browser PDF tools. Merge multiple PDFs, compress file size, extract pages, redact sensitive text, and convert images to PDF with zero server storage.",
   alternates: {
-    canonical: "https://trysomenew.com/pdf-tools",
+    canonical: "/pdf-tools",
   },
 };
 

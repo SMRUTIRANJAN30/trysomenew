@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ToolShell from "@/components/tools/ToolShell";
 import { RefreshCw, Copy, Check } from "lucide-react";
 
@@ -39,8 +39,15 @@ function TimestampRow({ label, value, isCopied, onCopy }: RowProps) {
 }
 
 export default function TimestampConverterPage() {
-  const [unix, setUnix] = useState(Math.floor(Date.now() / 1000).toString());
-  const [humanInput, setHumanInput] = useState(new Date().toISOString().slice(0, 16));
+  // "Now" must be read in the browser — the page is prerendered at build time.
+  const [unix, setUnix] = useState("");
+  const [humanInput, setHumanInput] = useState("");
+  useEffect(() => {
+    const d = new Date();
+    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); // datetime-local is local time
+    setUnix(Math.floor(d.getTime() / 1000).toString());
+    setHumanInput(local);
+  }, []);
   const [copied, setCopied] = useState<string | null>(null);
 
   const ts = parseInt(unix) || 0;

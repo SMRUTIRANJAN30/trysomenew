@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { ToolConfig, CATEGORY_TINTS, ToolCategory } from "@/config/tools";
+import type { ToolConfig } from "@/config/tools";
+import { CATEGORY_TINTS, ToolCategory } from "@/config/categories";
 import { DynamicIcon } from "./DynamicIcon";
 import { clsx } from "clsx";
 

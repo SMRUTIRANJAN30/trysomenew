@@ -1,25 +1,10 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { absoluteUrl } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://trysomenew.netlify.app";
-
+  // Do NOT disallow /_next/ — Googlebot needs the JS/CSS to render pages.
   return {
-    rules: [
-      {
-        userAgent: "*",
-        allow: "/",
-        disallow: ["/api/", "/_next/"],
-      },
-      {
-        userAgent: "Googlebot",
-        allow: "/",
-      },
-      {
-        userAgent: "Bingbot",
-        allow: "/",
-      },
-    ],
-    sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl,
+    rules: [{ userAgent: "*", allow: "/", disallow: ["/api/", "/dashboard", "/theme/"] }],
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }

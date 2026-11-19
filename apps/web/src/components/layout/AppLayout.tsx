@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { MobileNav } from "./MobileNav";
-import { CommandPalette } from "./CommandPalette";
-import { TOOLS } from "@/lib/toolsData";
+
+// The palette (and the full search index it needs) is only downloaded when first opened.
+const CommandPalette = dynamic(() => import("./CommandPalette").then((m) => m.CommandPalette), { ssr: false });
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const pathname = usePathname();
 
   useEffect(() => {
     const handleToggle = () => setIsCommandPaletteOpen((prev) => !prev);
@@ -18,29 +18,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("toggle-command-palette", handleToggle);
   }, []);
 
+  // Open shortcuts while the palette isn't mounted yet (once open, the palette handles keys itself).
   useEffect(() => {
-    if (!pathname) return;
-    if (pathname === "/") {
-      document.title = "trysomenew — One Fast Workspace for Documents, Files & Devices";
-      return;
-    }
-    if (pathname === "/tools") {
-      document.title = "Tools Directory — 170+ Document & Productivity Tools | trysomenew";
-      return;
-    }
-    if (pathname === "/beam") {
-      document.title = "Beam — Instant Device Pairing & Live Clipboard | trysomenew";
-      return;
-    }
-    if (pathname === "/about") {
-      document.title = "About Architect Smrutiranjan Sahoo — trysomenew";
-      return;
-    }
-    const tool = TOOLS.find((t) => t.href === pathname);
-    if (tool) {
-      document.title = `${tool.name} — Free Online Privacy-First Tool | trysomenew`;
-    }
-  }, [pathname]);
+    if (isCommandPaletteOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      const el = document.activeElement as HTMLElement | null;
+      const typing = !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
+      if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") || (e.key === "/" && !typing)) {
+        e.preventDefault();
+        setIsCommandPaletteOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isCommandPaletteOpen]);
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-[var(--paper)] text-[var(--ink)] selection:bg-[var(--pine-tint)] selection:text-[var(--pine)] transition-colors duration-150">
@@ -48,10 +39,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 w-full pb-16 sm:pb-0">{children}</main>
       <Footer />
       <MobileNav />
-      <CommandPalette
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setIsCommandPaletteOpen(false)}
-      />
+      {isCommandPaletteOpen && (
+        <CommandPalette isOpen onClose={() => setIsCommandPaletteOpen(false)} />
+      )}
     </div>
   );
 }

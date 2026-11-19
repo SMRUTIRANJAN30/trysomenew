@@ -65,7 +65,7 @@ export function Header({ onOpenCommandPalette }: HeaderProps) {
             >
               <div className="flex items-center gap-2">
                 <Search className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--pine)]" />
-                <span>Search 177+ browser tools...</span>
+                <span>Search 100+ browser tools...</span>
               </div>
               <kbd className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-[var(--sunken)] text-[var(--muted)] border border-[var(--line)]">
                 /
@@ -84,17 +84,17 @@ export function Header({ onOpenCommandPalette }: HeaderProps) {
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Downloader Link */}
+            {/* All tools Link */}
             <Link
-              href="/download"
+              href="/tools"
               className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-[6px] transition-colors ${
-                pathname === "/download"
+                pathname === "/tools"
                   ? "text-[var(--pine)] bg-[var(--pine-tint)]"
                   : "text-[var(--ink)] hover:bg-[var(--sunken)] hover:text-[var(--pine)]"
               }`}
             >
               <Download className="w-4 h-4 text-[var(--pine)]" />
-              <span>Downloader</span>
+              <span>All Tools</span>
             </Link>
 
             {/* Beam Signature Link */}
@@ -165,15 +165,7 @@ export function Header({ onOpenCommandPalette }: HeaderProps) {
               onClick={() => setMobileDrawerOpen(false)}
               className="block px-3 py-2 text-sm font-semibold rounded-[6px] bg-[var(--pine-tint)] text-[var(--pine)]"
             >
-              All 180+ Tools Directory
-            </Link>
-            <Link
-              href="/download"
-              onClick={() => setMobileDrawerOpen(false)}
-              className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-[6px] hover:bg-[var(--sunken)] text-[var(--ink)]"
-            >
-              <span>Media & Link Downloader</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[var(--pine-tint)] text-[var(--pine)]">TeraBox & YT</span>
+              All Tools Directory
             </Link>
             <Link
               href="/beam"

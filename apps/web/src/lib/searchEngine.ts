@@ -61,18 +61,8 @@ export function searchTools(query: string, limit = 8): { items: SearchItem[]; qu
   // 1. Search action commands
   const actions: SearchAction[] = [
     {
-      id: "action-download",
-      name: "Open Media & Link Downloader (TeraBox, YT, Insta, TikTok)",
-      category: "Action",
-      icon: "Download",
-      action: () => {
-        if (typeof window !== "undefined") window.location.href = "/download";
-      },
-      shortcut: "D",
-    },
-    {
       id: "action-beam",
-      name: "Open Beam Live Clipboard",
+      name: "Open Beam — send text & files phone ↔ PC",
       category: "Action",
       icon: "Radio",
       action: () => {

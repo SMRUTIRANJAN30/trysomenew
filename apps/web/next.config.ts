@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  poweredByHeader: false,
+  images: { formats: ["image/avif", "image/webp"] },
   async headers() {
     return [
       {
@@ -33,40 +32,59 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return [
-      { source: "/merge-pdf", destination: "/pdf/merge" },
-      { source: "/split-pdf", destination: "/pdf/split" },
-      { source: "/rotate-pdf", destination: "/pdf/rotate" },
-      { source: "/compress-pdf", destination: "/pdf/compress" },
-      { source: "/image-to-pdf", destination: "/image/to-pdf" },
-      { source: "/jpg-to-pdf", destination: "/image/to-pdf" },
-      { source: "/png-to-pdf", destination: "/image/to-pdf" },
-      { source: "/pdf-to-jpg", destination: "/pdf/to-image" },
-      { source: "/pdf-to-png", destination: "/pdf/to-image" },
-      { source: "/pdf-redact", destination: "/pdf/redact" },
-      { source: "/ocr-image", destination: "/ocr/image" },
-      { source: "/ocr-pdf", destination: "/ocr/pdf" },
-      { source: "/invoice-generator", destination: "/business/invoice" },
-      { source: "/receipt-generator", destination: "/business/receipt" },
-      { source: "/screen-recorder", destination: "/misc/screen-record" },
-      { source: "/draw-signature", destination: "/sign/draw" },
-      { source: "/type-signature", destination: "/sign/type" },
-      { source: "/markdown-to-pdf", destination: "/convert/markdown-to-pdf" },
-      { source: "/pdf-tools", destination: "/tools?category=pdf" },
-      { source: "/image-tools", destination: "/tools?category=image" },
-      { source: "/video-tools", destination: "/tools?category=video" },
-      { source: "/developer-tools", destination: "/tools?category=developer" },
-      { source: "/online-clipboard", destination: "/beam" },
-      { source: "/send-text-from-phone-to-pc", destination: "/beam" },
-      { source: "/transfer-files-phone-to-pc", destination: "/beam" },
-      { source: "/terabox-downloader", destination: "/download?platform=terabox" },
-      { source: "/youtube-downloader", destination: "/download?platform=youtube" },
-      { source: "/instagram-downloader", destination: "/download?platform=instagram" },
-      { source: "/tiktok-downloader", destination: "/download?platform=tiktok" },
-      { source: "/media-downloader", destination: "/download" },
-      { source: "/google92f69f2009533ddb.html", destination: "/api/google-verify" },
+  // Short, keyword-rich alias URLs permanently redirect to the one canonical page,
+  // so Google consolidates ranking signals instead of seeing duplicate content.
+  async redirects() {
+    const aliases: [string, string][] = [
+      ["/merge-pdf", "/pdf/merge"],
+      ["/split-pdf", "/pdf/split"],
+      ["/rotate-pdf", "/pdf/rotate"],
+      ["/compress-pdf", "/pdf/compress"],
+      ["/image-to-pdf", "/image/to-pdf"],
+      ["/jpg-to-pdf", "/image/to-pdf"],
+      ["/png-to-pdf", "/image/to-pdf"],
+      ["/pdf-to-jpg", "/pdf/to-image"],
+      ["/pdf-to-png", "/pdf/to-image"],
+      ["/pdf-redact", "/pdf/redact"],
+      ["/ocr-image", "/ocr/image"],
+      ["/ocr-pdf", "/ocr/pdf"],
+      ["/invoice-generator", "/business/invoice"],
+      ["/receipt-generator", "/business/receipt"],
+      ["/screen-recorder", "/misc/screen-record"],
+      ["/draw-signature", "/sign/draw"],
+      ["/type-signature", "/sign/type"],
+      ["/markdown-to-pdf", "/convert/markdown-to-pdf"],
+      ["/emi-calculator", "/calculator/emi"],
+      ["/gst-calculator", "/calculator/gst"],
+      ["/age-calculator", "/calculator/age"],
+      ["/resize-image", "/image/resize"],
+      ["/compress-image", "/image/compress"],
+      ["/crop-image", "/image/crop"],
+      ["/json-formatter", "/developer/json"],
+      ["/qr-code-generator", "/qr/generator"],
+      ["/word-counter", "/text/word-counter"],
+      ["/video-tools", "/tools?category=video"],
+      // Phone ↔ PC transfer now lives in Beam
+      ["/online-clipboard", "/beam"],
+      ["/send-text-from-phone-to-pc", "/beam"],
+      ["/transfer-files-phone-to-pc", "/beam"],
+      ["/clipboard", "/beam"],
+      ["/transfer", "/beam"],
+      // Retired pages
+      ["/download", "/tools"],
+      ["/media-downloader", "/tools"],
+      ["/terabox-downloader", "/tools"],
+      ["/youtube-downloader", "/tools"],
+      ["/instagram-downloader", "/tools"],
+      ["/tiktok-downloader", "/tools"],
+      ["/roadmap", "/tools"],
+      ["/developer-profile", "/about"],
+      ["/developer/diff", "/text/diff"],
     ];
+    return aliases.map(([source, destination]) => ({ source, destination, permanent: true }));
+  },
+  async rewrites() {
+    return [{ source: "/google92f69f2009533ddb.html", destination: "/api/google-verify" }];
   },
 };
 

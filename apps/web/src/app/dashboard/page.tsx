@@ -221,7 +221,7 @@ export default function DashboardPage() {
               className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-[6px] text-[var(--muted)] hover:text-[var(--ink)] hover:bg-[var(--line)]/40 transition-colors"
             >
               <Grid className="w-4 h-4" />
-              {!sidebarCollapsed && <span>All 177+ Tools</span>}
+              {!sidebarCollapsed && <span>All 100+ Tools</span>}
             </Link>
 
             <Link

@@ -1,16 +1,8 @@
 import { TOOLS, ToolDefinition } from "@/lib/toolsData";
 
-export type ToolCategory =
-  | "pdf"
-  | "image"
-  | "video"
-  | "text"
-  | "converters"
-  | "developer"
-  | "calculators"
-  | "security"
-  | "business"
-  | "misc";
+import { ToolCategory, CATEGORY_NAMES, CATEGORY_TINTS } from "./categories";
+export { CATEGORY_NAMES, CATEGORY_TINTS };
+export type { ToolCategory };
 
 export interface ToolFaq {
   question: string;
@@ -34,32 +26,6 @@ export interface ToolConfig {
   outputExtensions?: string[];
   maxFileSizeMB?: number;
 }
-
-export const CATEGORY_NAMES: Record<ToolCategory, string> = {
-  pdf: "PDF Tools",
-  image: "Image Tools",
-  video: "Video & Audio",
-  text: "Text & Writing",
-  converters: "Converters",
-  developer: "Developer Tools",
-  calculators: "Calculators",
-  security: "Security & Privacy",
-  business: "Business Tools",
-  misc: "Utilities & Media",
-};
-
-export const CATEGORY_TINTS: Record<ToolCategory, { bg: string; text: string; iconBg: string }> = {
-  pdf: { bg: "#F3D9D2", text: "#8A2810", iconBg: "#F3D9D2" },
-  image: { bg: "#DDE8D3", text: "#1F5F4A", iconBg: "#DDE8D3" },
-  video: { bg: "#E5DDEB", text: "#4A3563", iconBg: "#E5DDEB" },
-  text: { bg: "#D9E4EC", text: "#1A4363", iconBg: "#D9E4EC" },
-  converters: { bg: "#F1E4C8", text: "#755217", iconBg: "#F1E4C8" },
-  developer: { bg: "#E2E0DA", text: "#333A36", iconBg: "#E2E0DA" },
-  calculators: { bg: "#DDE8D3", text: "#1F5F4A", iconBg: "#DDE8D3" },
-  security: { bg: "#F3D9D2", text: "#8A2810", iconBg: "#F3D9D2" },
-  business: { bg: "#F1E4C8", text: "#755217", iconBg: "#F1E4C8" },
-  misc: { bg: "#E2E0DA", text: "#333A36", iconBg: "#E2E0DA" },
-};
 
 function mapCategory(rawCat: string): ToolCategory {
   const c = rawCat.toLowerCase();
@@ -135,98 +101,14 @@ const CURATED_DETAILS: Record<string, Partial<ToolConfig>> = {
     keywords: ["online clipboard", "beam", "phone to pc clipboard", "instant file transfer", "p2p clipboard"],
     faq: [
       { question: "How does Beam pair my devices?", answer: "Scan the on-screen QR code from your phone or enter the 6-character room code on PC." },
-      { question: "Is my clipboard encrypted?", answer: "Yes. All data transferred is encrypted end-to-end with Web Crypto AES-GCM." },
+      { question: "Is my data uploaded to a server?", answer: "No. Text and files travel over a direct WebRTC connection between your two devices, which is encrypted (DTLS) by the browser. Only a tiny pairing handshake goes through a signalling server." },
+    { question: "Do both devices need to be open?", answer: "Yes. Beam is a live connection, so keep the page open on both devices while sending." },
     ],
     related: ["verify", "qr-generator", "json-formatter"],
   },
 };
 
-// ─── NEW MEDIA & LINK DOWNLOADER TOOLS ───
-const DOWNLOADER_TOOLS: ToolConfig[] = [
-  {
-    slug: "universal-downloader",
-    name: "Universal Media & Link Downloader",
-    category: "video",
-    shortDescription: "Download videos, audio, and files from TeraBox, YouTube, Instagram Reels, TikTok, and direct links.",
-    keywords: ["media downloader", "video downloader", "download link", "terabox downloader", "youtube mp4", "insta reels download", "tiktok no watermark"],
-    faq: [
-      { question: "What sites are supported?", answer: "TeraBox, YouTube, Instagram Reels, TikTok (no watermark), Twitter/X, Facebook, and any direct file link." },
-      { question: "Can I convert YouTube videos to MP3?", answer: "Yes, choose high quality 320 kbps MP3 or Full HD MP4 video." },
-    ],
-    related: ["screen-recorder", "video-compress", "audio-trim", "beam"],
-    icon: "Download",
-    href: "/download",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-  },
-  {
-    slug: "terabox-downloader",
-    name: "TeraBox Link Downloader",
-    category: "converters",
-    shortDescription: "Extract and download files from TeraBox share links at high speed without account login.",
-    keywords: ["terabox downloader", "terabox link bypass", "terabox direct download", "terabox file extractor"],
-    faq: [
-      { question: "Do I need a TeraBox account?", answer: "No. Paste the shared link to extract the direct high-speed download link." },
-    ],
-    related: ["universal-downloader", "beam", "archive-extract"],
-    icon: "FolderDown",
-    href: "/download?platform=terabox",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-  },
-  {
-    slug: "youtube-downloader",
-    name: "YouTube Video & MP3 Downloader",
-    category: "video",
-    shortDescription: "Save YouTube videos in 1080p Full HD MP4 or extract audio tracks as 320 kbps MP3 files.",
-    keywords: ["youtube downloader", "youtube to mp3", "youtube mp4 1080p", "save youtube video"],
-    faq: [
-      { question: "Can I download audio only?", answer: "Yes, select MP3 Audio for instant sound track extraction." },
-    ],
-    related: ["universal-downloader", "screen-recorder", "audio-trim"],
-    icon: "Video",
-    href: "/download?platform=youtube",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-  },
-  {
-    slug: "instagram-downloader",
-    name: "Instagram Reels & Post Downloader",
-    category: "video",
-    shortDescription: "Download Instagram Reels, carousel photos, stories, and videos in original high resolution.",
-    keywords: ["instagram reels download", "insta video saver", "download instagram post", "instagram story saver"],
-    faq: [
-      { question: "Does it support private accounts?", answer: "Only publicly shared posts and reels can be extracted." },
-    ],
-    related: ["universal-downloader", "image-to-pdf", "image-compress"],
-    icon: "Camera",
-    href: "/download?platform=instagram",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-  },
-  {
-    slug: "tiktok-downloader",
-    name: "TikTok Downloader (No Watermark)",
-    category: "video",
-    shortDescription: "Download clean TikTok videos in HD without the floating watermark logo.",
-    keywords: ["tiktok no watermark", "tiktok downloader", "save tiktok video", "tiktok mp3 download"],
-    faq: [
-      { question: "Are videos free from the TikTok watermark?", answer: "Yes. Raw streams are extracted directly without the overlay watermark." },
-    ],
-    related: ["universal-downloader", "screen-recorder", "gif-maker"],
-    icon: "Music",
-    href: "/download?platform=tiktok",
-    isPopular: true,
-    status: "ready",
-    isLocal: true,
-  },
-];
-
-// ─── COMBINE ALL 177 TOOLS WITH CURATED DETAILS & NEW DOWNLOADERS ───
+// ─── COMBINE ALL TOOLS WITH CURATED DETAILS ───
 const allBaseTools: ToolConfig[] = TOOLS.map((t: ToolDefinition) => {
   const cat = mapCategory(t.category);
   const curated = CURATED_DETAILS[t.id] || {};
@@ -247,11 +129,11 @@ const allBaseTools: ToolConfig[] = TOOLS.map((t: ToolDefinition) => {
         answer: "No. All tools on trysomenew are 100% free with no page caps, watermarks, or hidden paywalls.",
       },
     ],
-    related: curated.related || ["merge-pdf", "compress-pdf", "image-to-pdf", "universal-downloader"],
+    related: curated.related || [],
     icon: t.iconName,
     href: t.href,
     isPopular: t.isPopular || false,
-    status: "ready",
+    status: t.status,
     isLocal: t.isLocal,
     inputExtensions: t.inputExtensions,
     outputExtensions: t.outputExtensions,
@@ -264,13 +146,14 @@ const beamTool: ToolConfig = {
   slug: "beam",
   name: "Beam Live Clipboard",
   category: "misc",
-  shortDescription: "Instantly sync clipboard text, links, and files between your phone and PC with QR pairing.",
+  shortDescription: "Send text, links and files directly between your phone and PC. Scan a QR code to pair — peer-to-peer, no upload.",
   keywords: ["online clipboard", "beam", "phone to pc clipboard", "instant file transfer", "p2p clipboard"],
   faq: [
     { question: "How does Beam pair my devices?", answer: "Scan the on-screen QR code from your phone or enter the 6-character room code on PC." },
-    { question: "Is my clipboard encrypted?", answer: "Yes. All data transferred is encrypted end-to-end with Web Crypto AES-GCM." },
+    { question: "Is my data uploaded to a server?", answer: "No. Text and files travel over a direct WebRTC connection between your two devices, which is encrypted (DTLS) by the browser. Only a tiny pairing handshake goes through a signalling server." },
+    { question: "Do both devices need to be open?", answer: "Yes. Beam is a live connection, so keep the page open on both devices while sending." },
   ],
-  related: ["verify", "qr-generator", "universal-downloader"],
+  related: ["qr-generator", "verify"],
   icon: "Radio",
   href: "/beam",
   isPopular: true,
@@ -278,22 +161,18 @@ const beamTool: ToolConfig = {
   isLocal: true,
 };
 
-// Deduplicate and assemble full 180+ tools catalog
+// Deduplicate and assemble the catalog (Beam first, then everything else)
 const toolMap = new Map<string, ToolConfig>();
-
-// Add downloaders first
-for (const d of DOWNLOADER_TOOLS) {
-  toolMap.set(d.slug, d);
-}
-
-// Add Beam
 toolMap.set(beamTool.slug, beamTool);
-
-// Add all base tools
 for (const t of allBaseTools) {
-  if (!toolMap.has(t.slug)) {
-    toolMap.set(t.slug, t);
-  }
+  if (!toolMap.has(t.slug)) toolMap.set(t.slug, t);
 }
 
-export const TOOLS_CONFIG: ToolConfig[] = Array.from(toolMap.values());
+/** Every tool, including ones that are still on the roadmap. */
+export const ALL_TOOLS_CONFIG: ToolConfig[] = Array.from(toolMap.values());
+
+/** Only tools that actually work today. Use this for every listing, menu, search and sitemap. */
+export const TOOLS_CONFIG: ToolConfig[] = ALL_TOOLS_CONFIG.filter((t) => t.status === "ready");
+
+/** Number of distinct working tool pages (several tools share one page, e.g. split/extract/delete). */
+export const TOOL_PAGE_COUNT = new Set(TOOLS_CONFIG.map((t) => t.href.split("?")[0])).size;

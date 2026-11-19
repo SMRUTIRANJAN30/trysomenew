@@ -7,11 +7,11 @@ import { ToolCard } from "@/components/common/ToolCard";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 export const metadata: Metadata = {
-  title: "Free Online Image Tools: Convert, Compress & Resize | trysomenew",
+  title: "Free Online Image Tools: Convert, Compress & Resize",
   description:
     "Fast in-browser image optimization tools. Convert JPG, PNG, WEBP to PDF, compress image file size, and remove EXIF privacy data locally.",
   alternates: {
-    canonical: "https://trysomenew.com/image-tools",
+    canonical: "/image-tools",
   },
 };
 

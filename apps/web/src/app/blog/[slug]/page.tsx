@@ -1,4 +1,5 @@
 import React from "react";
+import { SITE_URL } from "@/lib/site";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
@@ -13,14 +14,14 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = BLOG_POSTS.find((p) => p.slug === slug);
-  if (!post) return { title: "Article Not Found | trysomenew" };
+  if (!post) return { title: "Article Not Found" };
 
   return {
-    title: `${post.title} | trysomenew`,
+    title: `${post.title}`,
     description: post.description,
     keywords: post.keywords,
     alternates: {
-      canonical: `https://trysomenew.com/blog/${post.slug}`,
+      canonical: `/blog/${post.slug}`,
     },
     openGraph: {
       title: post.title,
@@ -46,12 +47,12 @@ export default async function BlogPostPage({ params }: Props) {
     author: {
       "@type": "Person",
       name: post.author,
-      url: "https://trysomenew.com/about",
+      url: `${SITE_URL}/about`,
     },
     publisher: {
       "@type": "Organization",
       name: "trysomenew",
-      url: "https://trysomenew.com",
+      url: SITE_URL,
     },
   };
 
@@ -114,7 +115,7 @@ export default async function BlogPostPage({ params }: Props) {
             Ready to try private in-browser document tools?
           </h3>
           <p className="text-xs text-[var(--muted)]">
-            Over 177+ free tools with zero file retention.
+            Over 100+ free tools with zero file retention.
           </p>
         </div>
         <Link href="/tools" className="btn-terracotta text-sm h-10 px-5 shrink-0">

@@ -7,11 +7,11 @@ import { ToolCard } from "@/components/common/ToolCard";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 export const metadata: Metadata = {
-  title: "Developer Tools: JSON, Base64, Diff & Hash Verification | trysomenew",
+  title: "Developer Tools: JSON, Base64, Diff & Hash",
   description:
     "Essential client-side developer utilities. Format JSON, decode JWT, calculate SHA-256 binary digests, and check diffs in browser RAM.",
   alternates: {
-    canonical: "https://trysomenew.com/developer-tools",
+    canonical: "/developer-tools",
   },
 };
 

@@ -6,11 +6,11 @@ import { BLOG_POSTS } from "@/config/blog";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 export const metadata: Metadata = {
-  title: "Document Guides & Productivity Tutorials | trysomenew",
+  title: "Document Guides & Productivity Tutorials",
   description:
     "Honest how-to guides, document security tips, and browser-first productivity workflows written by the trysomenew engineering team.",
   alternates: {
-    canonical: "https://trysomenew.com/blog",
+    canonical: "/blog",
   },
 };
 

@@ -1,630 +1,414 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import {
-  Radio,
-  Copy,
-  Check,
-  Trash2,
-  QrCode,
-  Smartphone,
-  Laptop,
-  ArrowRight,
-  ShieldCheck,
-  Send,
-  Camera,
-  RefreshCw,
-  Clock,
-  Lock,
-  ExternalLink,
-  Download,
-  AlertCircle,
-  FileText,
-} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { DataConnection, Peer as PeerType } from "peerjs";
 import QRCode from "qrcode";
-import {
-  generateBeamCode,
-  generateEmojiMatchCheck,
-  generateAesKey,
-  exportKeyToBase64,
-  importKeyFromBase64,
-  encryptText,
-  decryptText,
-} from "@/lib/beamCrypto";
-import { formatBytes } from "@/lib/utils";
+import { Check, Copy, Download, FileUp, Link2, Loader2, Radio, Send, Smartphone, Wifi, WifiOff, X } from "lucide-react";
 
-interface BeamItem {
-  id: string;
-  content: string;
-  fileName?: string;
-  fileSizeBytes?: number;
-  type: "text" | "url" | "file";
-  createdAt: string;
+/**
+ * Beam — real phone ↔ PC transfer over WebRTC.
+ * A public PeerJS broker is used only for the pairing handshake; text and files then
+ * travel directly between the two browsers on an encrypted (DTLS) data channel.
+ */
+
+const ID_PREFIX = "trysomenew-beam-";
+const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
+const CHUNK = 64 * 1024;
+const MAX_BUFFER = 4 * 1024 * 1024;
+
+type Status = "starting" | "waiting" | "connecting" | "connected" | "error";
+
+type Item =
+  | { id: string; kind: "text"; from: "me" | "peer"; text: string; at: number }
+  | { id: string; kind: "file"; from: "me" | "peer"; name: string; size: number; mime: string; progress: number; url?: string; at: number };
+
+type Ctrl =
+  | { t: "text"; id: string; text: string }
+  | { t: "file-start"; id: string; name: string; size: number; mime: string }
+  | { t: "file-end"; id: string }
+  | { t: "hello"; device: string };
+
+function makeCode() {
+  const bytes = crypto.getRandomValues(new Uint8Array(6));
+  return Array.from(bytes, (b) => CODE_ALPHABET[b % CODE_ALPHABET.length]).join("");
 }
 
+function fmtBytes(b: number) {
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+  if (b < 1024 * 1024 * 1024) return `${(b / 1024 / 1024).toFixed(1)} MB`;
+  return `${(b / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
+
+function deviceName() {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad/.test(ua)) return "iPhone / iPad";
+  if (/Android/.test(ua)) return "Android phone";
+  if (/Mac/.test(ua)) return "Mac";
+  if (/Windows/.test(ua)) return "Windows PC";
+  return "Device";
+}
+
+const isUrl = (s: string) => /^https?:\/\/\S+$/i.test(s.trim());
+
 export default function BeamPage() {
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
-  const [sessionActive, setSessionActive] = useState(false);
-  const [beamCode, setBeamCode] = useState("");
-  const [codeBoxes, setCodeBoxes] = useState(["", "", "", "", "", ""]);
-  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [keyBase64, setKeyBase64] = useState<string | null>(null);
-  const [cryptoKey, setCryptoKey] = useState<CryptoKey | null>(null);
-  const [emojis, setEmojis] = useState<string[]>([]);
-  const [items, setItems] = useState<BeamItem[]>([]);
-  const [inputText, setInputText] = useState("");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [linkCopied, setLinkCopied] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
-  const [timeLeftSecs, setTimeLeftSecs] = useState(600); // 10 minutes
-  const [wrongAttempts, setWrongAttempts] = useState(0);
-  const [isLockedOut, setIsLockedOut] = useState(false);
-  const [viewMode, setViewMode] = useState<"qr" | "code">("qr");
+  const [status, setStatus] = useState<Status>("starting");
+  const [error, setError] = useState("");
+  const [myCode, setMyCode] = useState("");
+  const [qr, setQr] = useState("");
+  const [joinCode, setJoinCode] = useState("");
+  const [peerDevice, setPeerDevice] = useState("");
+  const [items, setItems] = useState<Item[]>([]);
+  const [text, setText] = useState("");
+  const [copied, setCopied] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
-  const inputBoxesRef = useRef<(HTMLInputElement | null)[]>([]);
-  const broadcastRef = useRef<BroadcastChannel | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const peerRef = useRef<PeerType | null>(null);
+  const connRef = useRef<DataConnection | null>(null);
+  const incoming = useRef<Map<string, { chunks: ArrayBuffer[]; received: number; size: number; mime: string; name: string }>>(new Map());
+  const currentIncoming = useRef<string | null>(null);
+  const sendQueue = useRef<Promise<void>>(Promise.resolve());
+  const fileInput = useRef<HTMLInputElement>(null);
 
-  // 1. Detect device form factor
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      setIsMobileDevice(isMobile);
-      setViewMode(isMobile ? "code" : "qr");
-    }
+  const patchItem = useCallback((id: string, patch: Partial<Item>) => {
+    setItems((prev) => prev.map((it) => (it.id === id ? ({ ...it, ...patch } as Item) : it)));
   }, []);
 
-  // 2. Initialize or restore session from URL
-  useEffect(() => {
-    async function initSession() {
-      if (typeof window === "undefined") return;
-
-      const params = new URLSearchParams(window.location.search);
-      const urlCode = params.get("code");
-      const hashKey = window.location.hash.replace(/^#key=/, "");
-
-      if (urlCode && urlCode.length === 6) {
-        const clean = urlCode.toUpperCase();
-        setBeamCode(clean);
-        setEmojis(generateEmojiMatchCheck(clean));
-
-        let key: CryptoKey;
-        if (hashKey) {
-          key = await importKeyFromBase64(hashKey);
-          setKeyBase64(hashKey);
-        } else {
-          key = await generateAesKey();
-          const b64 = await exportKeyToBase64(key);
-          setKeyBase64(b64);
+  const handleData = useCallback(
+    (data: unknown) => {
+      if (typeof data === "string") {
+        let msg: Ctrl;
+        try { msg = JSON.parse(data); } catch { return; }
+        if (msg.t === "hello") setPeerDevice(msg.device);
+        if (msg.t === "text") setItems((p) => [{ id: msg.id, kind: "text", from: "peer", text: msg.text, at: Date.now() }, ...p]);
+        if (msg.t === "file-start") {
+          incoming.current.set(msg.id, { chunks: [], received: 0, size: msg.size, mime: msg.mime, name: msg.name });
+          currentIncoming.current = msg.id;
+          setItems((p) => [{ id: msg.id, kind: "file", from: "peer", name: msg.name, size: msg.size, mime: msg.mime, progress: 0, at: Date.now() }, ...p]);
         }
-        setCryptoKey(key);
-        setSessionActive(true);
-      } else {
-        // Generate new session code and key
-        const newCode = generateBeamCode();
-        setBeamCode(newCode);
-        setEmojis(generateEmojiMatchCheck(newCode));
-        const key = await generateAesKey();
-        const b64 = await exportKeyToBase64(key);
-        setKeyBase64(b64);
-        setCryptoKey(key);
+        if (msg.t === "file-end") {
+          const f = incoming.current.get(msg.id);
+          if (!f) return;
+          const url = URL.createObjectURL(new Blob(f.chunks, { type: f.mime || "application/octet-stream" }));
+          incoming.current.delete(msg.id);
+          currentIncoming.current = null;
+          patchItem(msg.id, { progress: 100, url });
+        }
+        return;
       }
-    }
+      // Binary chunk for the file currently being received (the channel is ordered).
+      const id = currentIncoming.current;
+      if (!id) return;
+      const f = incoming.current.get(id);
+      if (!f) return;
+      // Some browsers hand us a typed-array view; copy it so offsets are respected.
+      const buf = data instanceof ArrayBuffer ? data : ((data as Uint8Array).slice().buffer as ArrayBuffer);
+      f.chunks.push(buf);
+      f.received += buf.byteLength;
+      const pct = f.size ? Math.min(99, Math.floor((f.received / f.size) * 100)) : 99;
+      if (pct % 2 === 0) patchItem(id, { progress: pct });
+    },
+    [patchItem],
+  );
 
-    initSession();
-  }, []);
+  const attach = useCallback(
+    (conn: DataConnection) => {
+      connRef.current?.close();
+      connRef.current = conn;
+      setStatus("connecting");
+      conn.on("open", () => {
+        setStatus("connected");
+        setError("");
+        conn.send(JSON.stringify({ t: "hello", device: deviceName() } satisfies Ctrl));
+      });
+      conn.on("data", handleData);
+      conn.on("close", () => {
+        if (connRef.current === conn) {
+          connRef.current = null;
+          setPeerDevice("");
+          setStatus("waiting");
+        }
+      });
+      conn.on("error", (e) => setError(e.message));
+    },
+    [handleData],
+  );
 
-  // 3. Generate 220x220px Ink on White QR code
+  // Create our peer (and auto-join if opened from a QR link).
   useEffect(() => {
-    if (!beamCode || !keyBase64) return;
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://trysomenew.com";
-    const fullUrl = `${origin}/beam?code=${beamCode}#key=${keyBase64}`;
-    setShareUrl(fullUrl);
+    let cancelled = false;
+    let peer: PeerType | null = null;
 
-    QRCode.toDataURL(fullUrl, {
-      width: 220,
-      margin: 1,
-      color: {
-        dark: "#1E2421",
-        light: "#FFFFFF",
-      },
-      errorCorrectionLevel: "M",
-    })
-      .then((url) => setQrDataUrl(url))
-      .catch((err) => console.error("QR Generation error:", err));
-  }, [beamCode, keyBase64]);
-
-  // 4. 10-Minute Expiry Countdown
-  useEffect(() => {
-    if (timeLeftSecs <= 0) return;
-    const timer = setInterval(() => {
-      setTimeLeftSecs((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeLeftSecs]);
-
-  // 5. Broadcast Channel Sync
-  useEffect(() => {
-    if (!beamCode || typeof window === "undefined" || !("BroadcastChannel" in window)) return;
-
-    const channel = new BroadcastChannel(`trysomenew_beam_${beamCode}`);
-    broadcastRef.current = channel;
-
-    channel.onmessage = async (event) => {
-      if (event.data?.type === "BEAM_ADD") {
-        const item = event.data.item;
-        setItems((prev) => {
-          if (prev.some((i) => i.id === item.id)) return prev;
-          return [item, ...prev];
+    (async () => {
+      const { default: Peer } = await import("peerjs");
+      const start = (attempt = 0) => {
+        const code = makeCode();
+        peer = new Peer(ID_PREFIX + code, { debug: 0 });
+        peerRef.current = peer;
+        peer.on("open", () => {
+          if (cancelled) return;
+          setMyCode(code);
+          setStatus((s) => (s === "connected" || s === "connecting" ? s : "waiting"));
+          const join = new URLSearchParams(window.location.search).get("join");
+          if (join) {
+            const target = join.toUpperCase().replace(/[^A-Z0-9]/g, "");
+            setJoinCode(target);
+            attach(peer!.connect(ID_PREFIX + target, { reliable: true, serialization: "raw" }));
+            window.history.replaceState(null, "", "/beam");
+          }
         });
-      } else if (event.data?.type === "BEAM_CLEAR") {
-        setItems([]);
-      }
-    };
+        peer.on("connection", (conn) => attach(conn));
+        peer.on("disconnected", () => { if (!cancelled && !peer?.destroyed) peer?.reconnect(); });
+        peer.on("error", (e: Error & { type?: string }) => {
+          if (cancelled) return;
+          if (e.type === "unavailable-id" && attempt < 3) { peer?.destroy(); start(attempt + 1); return; }
+          if (e.type === "peer-unavailable") {
+            setError("No device is waiting with that code. Check the code and make sure Beam is open on the other device.");
+            setStatus("waiting");
+            return;
+          }
+          if (e.type === "network" || e.type === "server-error" || e.type === "socket-error") {
+            setError("Can't reach the pairing server. Check your internet connection and reload.");
+            setStatus("error");
+            return;
+          }
+          setError(e.message);
+        });
+      };
+      start();
+    })().catch((e) => { setError(String(e)); setStatus("error"); });
 
     return () => {
-      channel.close();
+      cancelled = true;
+      connRef.current?.close();
+      peer?.destroy();
     };
-  }, [beamCode]);
+  }, [attach]);
 
-  // Handle individual box input for 6-character code
-  const handleBoxChange = (index: number, val: string) => {
-    if (isLockedOut) return;
-    const clean = val.toUpperCase().replace(/[^23456789ABCDEFGHJKMNPQRSTUVWXYZ]/g, "");
-    const updated = [...codeBoxes];
-    updated[index] = clean.slice(-1);
-    setCodeBoxes(updated);
+  useEffect(() => {
+    if (!myCode) return;
+    QRCode.toDataURL(`${window.location.origin}/beam?join=${myCode}`, { width: 240, margin: 1, errorCorrectionLevel: "M" })
+      .then(setQr)
+      .catch(() => setQr(""));
+  }, [myCode]);
 
-    if (clean && index < 5) {
-      inputBoxesRef.current[index + 1]?.focus();
-    }
-
-    // If all 6 filled
-    if (updated.every((b) => b.length === 1)) {
-      const fullCode = updated.join("");
-      connectToCode(fullCode);
-    }
+  const connectTo = () => {
+    const code = joinCode.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (code.length !== 6) { setError("Codes are 6 characters long."); return; }
+    if (code === myCode) { setError("That's this device's own code — enter the code shown on the other device."); return; }
+    if (!peerRef.current) return;
+    setError("");
+    attach(peerRef.current.connect(ID_PREFIX + code, { reliable: true, serialization: "raw" }));
   };
 
-  const handleBoxKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !codeBoxes[index] && index > 0) {
-      inputBoxesRef.current[index - 1]?.focus();
-    }
+  const sendText = () => {
+    const conn = connRef.current;
+    const value = text.trim();
+    if (!conn?.open || !value) return;
+    const id = crypto.randomUUID();
+    conn.send(JSON.stringify({ t: "text", id, text: value } satisfies Ctrl));
+    setItems((p) => [{ id, kind: "text", from: "me", text: value, at: Date.now() }, ...p]);
+    setText("");
   };
 
-  const handleBoxPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").toUpperCase().replace(/[^23456789ABCDEFGHJKMNPQRSTUVWXYZ]/g, "");
-    if (pasted.length >= 6) {
-      const chars = pasted.slice(0, 6).split("");
-      setCodeBoxes(chars);
-      connectToCode(pasted.slice(0, 6));
-    }
-  };
+  const waitForBuffer = (conn: DataConnection) =>
+    new Promise<void>((resolve) => {
+      const dc = conn.dataChannel;
+      if (!dc || dc.bufferedAmount < MAX_BUFFER) return resolve();
+      dc.bufferedAmountLowThreshold = MAX_BUFFER / 2;
+      const done = () => { dc.removeEventListener("bufferedamountlow", done); resolve(); };
+      dc.addEventListener("bufferedamountlow", done);
+    });
 
-  const connectToCode = async (code: string) => {
-    if (wrongAttempts >= 5) {
-      setIsLockedOut(true);
-      return;
-    }
-
-    setBeamCode(code);
-    setEmojis(generateEmojiMatchCheck(code));
-    const key = await generateAesKey();
-    setCryptoKey(key);
-    setSessionActive(true);
-  };
-
-  const handleSendMessage = async () => {
-    if (!inputText.trim()) return;
-
-    const trimmed = inputText.trim();
-    const isUrl = /^https?:\/\/[^\s]+$/.test(trimmed);
-
-    const newItem: BeamItem = {
-      id: "beam_" + Date.now(),
-      content: trimmed,
-      type: isUrl ? "url" : "text",
-      createdAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-
-    setItems((prev) => [newItem, ...prev]);
-    setInputText("");
-
-    if (broadcastRef.current) {
-      broadcastRef.current.postMessage({ type: "BEAM_ADD", item: newItem });
-    }
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-
-    // 50MB Limit
-    if (file.size > 50 * 1024 * 1024) {
-      alert("File exceeds the 50 MB Beam limit.");
-      return;
-    }
-
-    // Block executable files
-    if (/\.(exe|bat|cmd|sh|msi|vbs|jar)$/i.test(file.name)) {
-      alert("Executable files are not permitted for security.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const newItem: BeamItem = {
-        id: "beam_" + Date.now(),
-        content: reader.result as string,
-        fileName: file.name,
-        fileSizeBytes: file.size,
-        type: "file",
-        createdAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-
-      setItems((prev) => [newItem, ...prev]);
-
-      if (broadcastRef.current) {
-        broadcastRef.current.postMessage({ type: "BEAM_ADD", item: newItem });
+  const sendFile = (file: File) => {
+    const id = crypto.randomUUID();
+    setItems((p) => [{ id, kind: "file", from: "me", name: file.name, size: file.size, mime: file.type, progress: 0, at: Date.now() }, ...p]);
+    // Files go one at a time so chunks never interleave.
+    sendQueue.current = sendQueue.current.then(async () => {
+      const conn = connRef.current;
+      if (!conn?.open) { setError("Connection lost before the file could be sent."); return; }
+      conn.send(JSON.stringify({ t: "file-start", id, name: file.name, size: file.size, mime: file.type } satisfies Ctrl));
+      let offset = 0;
+      let lastPct = -1;
+      while (offset < file.size) {
+        await waitForBuffer(conn);
+        const buf = await file.slice(offset, offset + CHUNK).arrayBuffer();
+        conn.send(buf);
+        offset += buf.byteLength;
+        const pct = Math.floor((offset / file.size) * 100);
+        if (pct !== lastPct) { lastPct = pct; patchItem(id, { progress: pct }); }
       }
-    };
-    reader.readAsDataURL(file);
+      conn.send(JSON.stringify({ t: "file-end", id } satisfies Ctrl));
+      patchItem(id, { progress: 100 });
+    });
   };
 
-  const copyItem = (content: string, id: string) => {
-    navigator.clipboard.writeText(content);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  const sendFiles = (files: FileList | File[] | null) => {
+    if (!files || !connRef.current?.open) return;
+    Array.from(files).forEach(sendFile);
   };
 
-  const deleteItem = (id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+  const copy = async (id: string, value: string) => {
+    try { await navigator.clipboard.writeText(value); setCopied(id); setTimeout(() => setCopied(null), 1500); } catch { /* ignore */ }
   };
 
-  const formatCountdown = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
-  };
+  const disconnect = () => { connRef.current?.close(); connRef.current = null; setPeerDevice(""); setStatus("waiting"); };
 
-  const handleRefreshCode = async () => {
-    const newCode = generateBeamCode();
-    setBeamCode(newCode);
-    setEmojis(generateEmojiMatchCheck(newCode));
-    setTimeLeftSecs(600);
-    const key = await generateAesKey();
-    const b64 = await exportKeyToBase64(key);
-    setKeyBase64(b64);
-    setCryptoKey(key);
-  };
+  const connected = status === "connected";
 
   return (
-    <div className="w-full max-w-[1000px] mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12 text-left">
-      {/* Header */}
-      <div className="mb-8 space-y-2 border-b border-[var(--line)] pb-6">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[4px] bg-[var(--pine-tint)] text-[var(--pine)] text-xs font-semibold">
-          <Radio className="w-3.5 h-3.5 text-[var(--terracotta)]" />
-          <span>Signature Feature</span>
+    <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 space-y-6">
+      <header className="space-y-2">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-[var(--pine-tint)] text-[var(--pine)] text-xs font-semibold">
+          <Radio className="w-3.5 h-3.5" /> Peer-to-peer · nothing is uploaded
         </div>
-        <h1 className="text-2xl sm:text-4xl font-semibold">
-          Beam: Live Clipboard
-        </h1>
-        <p className="text-sm sm:text-base text-[var(--muted)] max-w-xl">
-          Direct phone and PC pairing for instant text, links, photos and files with end-to-end encryption.
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-[var(--ink)]">Beam — Send Text &amp; Files Between Phone and PC</h1>
+        <p className="text-sm text-[var(--muted)] max-w-2xl">
+          Open this page on both devices, scan the QR code with your phone, and send text, links, photos or any file in either direction.
+          Data goes straight from one browser to the other over an encrypted WebRTC connection.
         </p>
+      </header>
+
+      {/* Status bar */}
+      <div className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm ${connected ? "border-[var(--success)] bg-[var(--success-tint)]" : "border-[var(--line)] bg-[var(--surface)]"}`}>
+        <div className="flex items-center gap-2 text-[var(--ink)]">
+          {connected ? <Wifi className="w-4 h-4 text-[var(--success)]" /> : status === "error" ? <WifiOff className="w-4 h-4 text-[var(--error)]" /> : <Loader2 className="w-4 h-4 animate-spin text-[var(--muted)]" />}
+          <span>
+            {status === "starting" && "Starting…"}
+            {status === "waiting" && "Waiting for another device"}
+            {status === "connecting" && "Connecting…"}
+            {status === "connected" && `Connected to ${peerDevice || "device"}`}
+            {status === "error" && "Offline"}
+          </span>
+        </div>
+        {connected && (
+          <button onClick={disconnect} className="inline-flex items-center gap-1 text-xs text-[var(--muted)] hover:text-[var(--error)]">
+            <X className="w-3.5 h-3.5" /> Disconnect
+          </button>
+        )}
       </div>
 
-      {isLockedOut ? (
-        <div className="p-8 bg-[var(--surface)] border border-[var(--error)]/40 rounded-[8px] text-center space-y-4">
-          <AlertCircle className="w-10 h-10 text-[var(--error)] mx-auto" />
-          <h3 className="text-lg font-semibold text-[var(--ink)]">Too many incorrect attempts</h3>
-          <p className="text-xs text-[var(--muted)] max-w-sm mx-auto">
-            Pairing has been temporarily locked out for security. Please refresh or create a new session.
-          </p>
-          <button onClick={() => window.location.reload()} className="btn-secondary text-xs h-9 px-4">
-            Reset Session
-          </button>
-        </div>
-      ) : !sessionActive ? (
-        /* PAIRING SETUP VIEW */
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          {/* Left Column: QR Code + Code Display (Host side) */}
-          <div className="md:col-span-6 bg-[var(--surface)] border border-[var(--line)] rounded-[8px] p-6 text-center space-y-6">
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold text-[var(--ink)]">Pair with Phone or PC</h3>
-              <p className="text-xs text-[var(--muted)]">
-                Scan QR with camera or enter the 6-character code.
-              </p>
-            </div>
+      {error && <div role="alert" className="rounded-lg border border-[var(--error)] bg-[var(--error-tint)] px-4 py-3 text-sm text-[var(--error)]">{error}</div>}
 
-            {/* QR Code Container (220x220px, ink on white, 1px line) */}
-            <div className="inline-block p-3 bg-white border border-[var(--line)] rounded-[6px]">
-              {qrDataUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={qrDataUrl} alt="Beam pairing QR code" className="w-[220px] h-[220px]" />
-              ) : (
-                <div className="w-[220px] h-[220px] bg-[var(--sunken)] flex items-center justify-center">
-                  <span className="text-xs text-[var(--muted)]">Generating QR...</span>
-                </div>
-              )}
+      {!connected && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <section className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-5 flex flex-col items-center text-center gap-3">
+            <h2 className="font-semibold text-[var(--ink)]">Scan with your other device</h2>
+            <div className="w-[200px] h-[200px] rounded-lg bg-white p-2 flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {qr ? <img src={qr} alt="QR code to pair with Beam" width={184} height={184} /> : <Loader2 className="w-6 h-6 animate-spin text-gray-400" />}
             </div>
-
-            {/* 6-Character Code in IBM Plex Mono 40px */}
-            <div className="space-y-1">
-              <span className="text-xs font-semibold text-[var(--muted)] uppercase tracking-wider block">
-                Session Code
-              </span>
-              <div className="font-mono text-3xl sm:text-4xl font-bold tracking-widest text-[var(--ink)]">
-                {beamCode || "------"}
-              </div>
-            </div>
-
-            {/* Countdown + Controls */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs">
-              <span className="flex items-center gap-1 text-[var(--muted)] font-mono">
-                <Clock className="w-3.5 h-3.5" />
-                <span>Expires in {formatCountdown(timeLeftSecs)}</span>
-              </span>
-
-              <button
-                onClick={handleRefreshCode}
-                className="btn-secondary text-xs h-8 px-3 flex items-center gap-1.5"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>New Code</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Right Column: Enter Code (Receiver side) */}
-          <div className="md:col-span-6 bg-[var(--surface)] border border-[var(--line)] rounded-[8px] p-6 space-y-6">
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold text-[var(--ink)]">Connect to Existing Session</h3>
-              <p className="text-xs text-[var(--muted)]">
-                Type the 6-character code shown on your other device.
-              </p>
-            </div>
-
-            {/* 6 Auto-Advancing Input Boxes */}
-            <div className="flex items-center justify-center gap-2 pt-2" onPaste={handleBoxPaste}>
-              {codeBoxes.map((val, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => {
-                    inputBoxesRef.current[idx] = el;
-                  }}
-                  type="text"
-                  maxLength={1}
-                  value={val}
-                  onChange={(e) => handleBoxChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleBoxKeyDown(idx, e)}
-                  className="w-11 h-14 text-center font-mono text-2xl font-bold uppercase rounded-[6px] border border-[var(--line)] focus:border-[var(--pine)]"
-                />
-              ))}
-            </div>
-
-            <div className="pt-4 space-y-3 border-t border-[var(--line)] text-xs text-[var(--muted)]">
-              <div className="flex items-center gap-2 text-[var(--pine)] font-semibold">
-                <ShieldCheck className="w-4 h-4" />
-                <span>End-to-End Encrypted (AES-GCM)</span>
-              </div>
-              <p className="leading-relaxed">
-                We cannot read your clipboard. Keys are stored strictly on your devices and in the URL fragment.
-              </p>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="pt-2">
-              <button
-                onClick={() => setSessionActive(true)}
-                className="btn-terracotta w-full text-sm h-11"
-              >
-                Open Shared Clipboard
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* PAIRED WORKSPACE VIEW */
-        <div className="space-y-6">
-          {/* Status Header */}
-          <div className="bg-[var(--surface)] border border-[var(--line)] rounded-[8px] p-4 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-[var(--success)] animate-pulse" />
-              <div>
-                <div className="text-sm font-semibold text-[var(--ink)] flex items-center gap-2">
-                  <span>Beam Channel Active</span>
-                  <span className="font-mono text-xs text-[var(--muted)]">({beamCode})</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-[var(--muted)] mt-0.5">
-                  <span>Match check:</span>
-                  <span className="text-sm">{emojis.join(" ")}</span>
-                </div>
-              </div>
-            </div>
-
+            <p className="text-xs text-[var(--muted)]">or enter this code on it</p>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(shareUrl);
-                  setLinkCopied(true);
-                  setTimeout(() => setLinkCopied(false), 2000);
-                }}
-                className="btn-secondary text-xs h-8 px-3"
-              >
-                {linkCopied ? <Check className="w-3.5 h-3.5 text-[var(--pine)]" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{linkCopied ? "Link Copied" : "Copy Link"}</span>
-              </button>
-
-              <button
-                onClick={() => setSessionActive(false)}
-                className="btn-secondary text-xs h-8 px-3 text-[var(--error)]"
-              >
-                End Session
-              </button>
-            </div>
-          </div>
-
-          {/* Composer */}
-          <div className="bg-[var(--surface)] border border-[var(--line)] rounded-[8px] p-5 space-y-4">
-            <label className="text-xs font-semibold text-[var(--muted)] uppercase block">
-              Send text, link, code snippet, or upload photo/file
-            </label>
-
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              rows={4}
-              placeholder="Paste text or notes here, or drop files..."
-              className="w-full text-base p-3"
-            />
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--line)]">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="btn-secondary text-xs h-9 px-3 flex items-center gap-1.5"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span>Attach File (max 50 MB)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => cameraInputRef.current?.click()}
-                  className="sm:hidden btn-secondary text-xs h-9 px-3 flex items-center gap-1.5"
-                >
-                  <Camera className="w-4 h-4" />
-                  <span>Photo</span>
-                </button>
-              </div>
-
-              {/* SINGLE TERRACOTTA BUTTON */}
-              <button
-                type="button"
-                onClick={handleSendMessage}
-                disabled={!inputText.trim()}
-                className="btn-terracotta text-sm h-9 px-5 flex items-center gap-2"
-              >
-                <Send className="w-4 h-4" />
-                <span>Beam Item</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Items History Stream */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold">Shared Stream ({items.length})</h3>
-              {items.length > 0 && (
-                <button
-                  onClick={() => {
-                    setItems([]);
-                    broadcastRef.current?.postMessage({ type: "BEAM_CLEAR" });
-                  }}
-                  className="text-xs text-[var(--error)] hover:underline"
-                >
-                  Clear All
+              <span className="font-mono text-2xl tracking-[0.3em] font-semibold text-[var(--ink)]">{myCode || "······"}</span>
+              {myCode && (
+                <button onClick={() => copy("code", myCode)} aria-label="Copy code" className="p-1.5 rounded hover:bg-[var(--sunken)] text-[var(--muted)]">
+                  {copied === "code" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 </button>
               )}
             </div>
+          </section>
 
-            {items.length === 0 ? (
-              <div className="p-8 bg-[var(--surface)] border border-[var(--line)] rounded-[8px] text-center text-xs text-[var(--muted)]">
-                No items beamed yet. Send text or a file above to view it instantly on all paired devices.
-              </div>
-            ) : (
-              items.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-[var(--surface)] border border-[var(--line)] rounded-[6px] p-4 space-y-2 animate-in fade-in duration-150"
-                >
-                  <div className="flex items-center justify-between text-xs pb-2 border-b border-[var(--line)]">
-                    <span className="font-mono text-[var(--muted)]">{item.createdAt}</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => copyItem(item.content, item.id)}
-                        className="btn-secondary text-[11px] h-7 px-2.5 flex items-center gap-1"
-                      >
-                        {copiedId === item.id ? (
-                          <Check className="w-3 h-3 text-[var(--pine)]" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                        <span>{copiedId === item.id ? "Copied" : "Copy"}</span>
-                      </button>
-                      <button
-                        onClick={() => deleteItem(item.id)}
-                        className="p-1 text-[var(--muted)] hover:text-[var(--error)]"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
+          <section className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-5 flex flex-col gap-3">
+            <h2 className="font-semibold text-[var(--ink)] flex items-center gap-2"><Smartphone className="w-4 h-4" /> Join another device</h2>
+            <p className="text-sm text-[var(--muted)]">Type the 6-character code shown on the other screen.</p>
+            <form onSubmit={(e) => { e.preventDefault(); connectTo(); }} className="flex gap-2">
+              <input
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 6))}
+                placeholder="ABC234"
+                inputMode="text"
+                autoCapitalize="characters"
+                autoComplete="off"
+                aria-label="Pairing code"
+                className="flex-1 min-w-0 font-mono tracking-[0.25em] uppercase rounded-md border border-[var(--line)] bg-[var(--paper)] px-3 py-2 text-[var(--ink)] focus:outline-none focus:border-[var(--pine)]"
+              />
+              <button type="submit" disabled={status === "starting" || joinCode.length !== 6} className="px-4 py-2 rounded-md bg-[var(--pine)] text-white text-sm font-semibold disabled:opacity-50">
+                Connect
+              </button>
+            </form>
+            <ul className="mt-auto text-xs text-[var(--muted)] space-y-1 list-disc pl-4">
+              <li>Works on Wi-Fi or mobile data — devices don&apos;t need the same network.</li>
+              <li>Keep this page open on both devices while sending.</li>
+              <li>No size limit; very large files depend on the receiving device&apos;s memory.</li>
+            </ul>
+          </section>
+        </div>
+      )}
 
-                  {item.type === "url" ? (
-                    <a
-                      href={item.content}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-semibold text-[var(--pine)] hover:underline break-all block"
-                    >
-                      {item.content}
-                    </a>
-                  ) : item.type === "file" ? (
-                    <div className="flex items-center justify-between pt-1">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-[var(--ink)]">
-                        <FileText className="w-4 h-4 text-[var(--pine)]" />
-                        <span>{item.fileName}</span>
-                        <span className="font-mono text-[var(--muted)] font-normal">
-                          ({item.fileSizeBytes ? formatBytes(item.fileSizeBytes) : ""})
-                        </span>
-                      </div>
-                      <a
-                        href={item.content}
-                        download={item.fileName || "beamed_file"}
-                        className="btn-secondary text-xs h-7 px-2.5 flex items-center gap-1"
-                      >
-                        <Download className="w-3 h-3" />
-                        <span>Download</span>
-                      </a>
-                    </div>
+      {connected && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <section className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-5 flex flex-col gap-3">
+            <h2 className="font-semibold text-[var(--ink)]">Send text or a link</h2>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) sendText(); }}
+              rows={5}
+              placeholder="Paste anything…"
+              className="w-full rounded-md border border-[var(--line)] bg-[var(--paper)] px-3 py-2 text-sm text-[var(--ink)] focus:outline-none focus:border-[var(--pine)] resize-y"
+            />
+            <button onClick={sendText} disabled={!text.trim()} className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-[var(--pine)] text-white text-sm font-semibold disabled:opacity-50">
+              <Send className="w-4 h-4" /> Send text
+            </button>
+          </section>
+
+          <section
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); sendFiles(e.dataTransfer.files); }}
+            className={`rounded-lg border-2 border-dashed p-5 flex flex-col items-center justify-center gap-3 text-center ${dragOver ? "border-[var(--pine)] bg-[var(--pine-tint)]" : "border-[var(--line)] bg-[var(--surface)]"}`}
+          >
+            <FileUp className="w-8 h-8 text-[var(--muted)]" />
+            <p className="text-sm text-[var(--ink)]">Drop files here or</p>
+            <button onClick={() => fileInput.current?.click()} className="px-4 py-2 rounded-md border border-[var(--line)] text-sm font-semibold text-[var(--ink)] hover:bg-[var(--sunken)]">
+              Choose files
+            </button>
+            <input ref={fileInput} type="file" multiple className="hidden" onChange={(e) => { sendFiles(e.target.files); e.target.value = ""; }} />
+          </section>
+        </div>
+      )}
+
+      {items.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-sm font-semibold text-[var(--ink)]">This session</h2>
+          <ul className="space-y-2">
+            {items.map((it) => (
+              <li key={it.id} className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3 flex items-start gap-3">
+                <span className={`mt-0.5 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${it.from === "me" ? "bg-[var(--sunken)] text-[var(--muted)]" : "bg-[var(--pine-tint)] text-[var(--pine)]"}`}>
+                  {it.from === "me" ? "Sent" : "Received"}
+                </span>
+                <div className="flex-1 min-w-0">
+                  {it.kind === "text" ? (
+                    isUrl(it.text) ? (
+                      <a href={it.text} target="_blank" rel="noopener noreferrer" className="text-sm text-[var(--pine)] break-all inline-flex items-center gap-1"><Link2 className="w-3.5 h-3.5 shrink-0" />{it.text}</a>
+                    ) : (
+                      <p className="text-sm text-[var(--ink)] whitespace-pre-wrap break-words">{it.text}</p>
+                    )
                   ) : (
-                    <p className="text-sm text-[var(--ink)] whitespace-pre-wrap break-words">
-                      {item.content}
-                    </p>
+                    <>
+                      <p className="text-sm text-[var(--ink)] truncate">{it.name}</p>
+                      <p className="text-xs text-[var(--muted)]">{fmtBytes(it.size)}{it.progress < 100 ? ` · ${it.progress}%` : ""}</p>
+                      {it.progress < 100 && (
+                        <div className="mt-1.5 h-1.5 rounded bg-[var(--sunken)] overflow-hidden"><div className="h-full bg-[var(--pine)] transition-[width]" style={{ width: `${it.progress}%` }} /></div>
+                      )}
+                    </>
                   )}
                 </div>
-              ))
-            )}
-          </div>
-        </div>
+                {it.kind === "text" && (
+                  <button onClick={() => copy(it.id, it.text)} aria-label="Copy" className="p-1.5 rounded hover:bg-[var(--sunken)] text-[var(--muted)]">
+                    {copied === it.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                )}
+                {it.kind === "file" && it.url && (
+                  <a href={it.url} download={it.name} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-[var(--pine)] text-white text-xs font-semibold">
+                    <Download className="w-3.5 h-3.5" /> Save
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

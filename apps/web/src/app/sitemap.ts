@@ -1,55 +1,33 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
 import { TOOLS_CONFIG } from "@/config/tools";
-import { TOOLS } from "@/lib/toolsData";
+import { BLOG_POSTS } from "@/config/blog";
+import { absoluteUrl } from "@/lib/site";
 
+// Only canonical, indexable URLs. Alias URLs (/merge-pdf etc.) 301 to these, so they are not listed.
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://trysomenew.netlify.app";
   const now = new Date();
-
-  // Core static & comparison pages
-  const coreRoutes = [
-    { path: "", priority: 1.0, changeFrequency: "daily" as const },
-    { path: "/tools", priority: 0.95, changeFrequency: "daily" as const },
-    { path: "/download", priority: 0.95, changeFrequency: "daily" as const },
-    { path: "/beam", priority: 0.95, changeFrequency: "daily" as const },
-    { path: "/dashboard", priority: 0.9, changeFrequency: "daily" as const },
-    { path: "/ilovepdf-alternative", priority: 0.85, changeFrequency: "weekly" as const },
-    { path: "/smallpdf-alternative", priority: 0.85, changeFrequency: "weekly" as const },
-    { path: "/about", priority: 0.7, changeFrequency: "monthly" as const },
-    { path: "/verify", priority: 0.85, changeFrequency: "weekly" as const },
-    { path: "/merge-pdf", priority: 0.95, changeFrequency: "daily" as const },
-    { path: "/compress-pdf", priority: 0.95, changeFrequency: "daily" as const },
-    { path: "/image-to-pdf", priority: 0.95, changeFrequency: "daily" as const },
-    { path: "/pdf-to-jpg", priority: 0.9, changeFrequency: "weekly" as const },
-    { path: "/ocr-image", priority: 0.9, changeFrequency: "weekly" as const },
-    { path: "/invoice-generator", priority: 0.9, changeFrequency: "weekly" as const },
-    { path: "/screen-recorder", priority: 0.85, changeFrequency: "weekly" as const },
+  const entries: MetadataRoute.Sitemap = [
+    { url: absoluteUrl("/"), lastModified: now, changeFrequency: "weekly", priority: 1 },
+    { url: absoluteUrl("/tools"), lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: absoluteUrl("/pdf-tools"), lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    { url: absoluteUrl("/image-tools"), lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    { url: absoluteUrl("/developer-tools"), lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    { url: absoluteUrl("/ilovepdf-alternative"), lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: absoluteUrl("/smallpdf-alternative"), lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: absoluteUrl("/blog"), lastModified: now, changeFrequency: "weekly", priority: 0.6 },
+    { url: absoluteUrl("/about"), lastModified: now, changeFrequency: "yearly", priority: 0.4 },
   ];
 
-  const staticEntries: MetadataRoute.Sitemap = coreRoutes.map((route) => ({
-    url: `${baseUrl}${route.path}`,
-    lastModified: now,
-    changeFrequency: route.changeFrequency,
-    priority: route.priority,
-  }));
-
-  // Map all functional tools from tools data & config
-  const toolHrefs = new Set<string>();
-  const toolEntries: MetadataRoute.Sitemap = [];
-
-  for (const tool of TOOLS) {
-    if (tool.status === "ready" && tool.href.startsWith("/") && !toolHrefs.has(tool.href)) {
-      toolHrefs.add(tool.href);
-      if (!coreRoutes.some((c) => c.path === tool.href)) {
-        toolEntries.push({
-          url: `${baseUrl}${tool.href}`,
-          lastModified: now,
-          changeFrequency: "weekly",
-          priority: tool.isPopular ? 0.85 : 0.75,
-        });
-      }
-    }
+  const seen = new Set<string>();
+  for (const tool of TOOLS_CONFIG) {
+    const path = tool.href.split("?")[0];
+    if (seen.has(path)) continue;
+    seen.add(path);
+    entries.push({ url: absoluteUrl(path), lastModified: now, changeFrequency: "monthly", priority: tool.isPopular ? 0.9 : 0.7 });
   }
 
-  return [...staticEntries, ...toolEntries];
+  for (const post of BLOG_POSTS) {
+    entries.push({ url: absoluteUrl(`/blog/${post.slug}`), lastModified: now, changeFrequency: "yearly", priority: 0.5 });
+  }
+  return entries;
 }

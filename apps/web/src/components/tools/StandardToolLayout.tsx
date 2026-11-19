@@ -363,7 +363,7 @@ export function StandardToolLayout({
               href="/tools"
               className="text-sm font-semibold text-[var(--pine)] hover:underline flex items-center gap-1"
             >
-              <span>Explore All 177+ Tools</span>
+              <span>Explore All 100+ Tools</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

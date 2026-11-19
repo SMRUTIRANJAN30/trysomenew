@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { ChevronDown, ArrowRight } from "lucide-react";
 import { DynamicIcon } from "@/components/common/DynamicIcon";
-import { CATEGORY_TINTS, ToolCategory } from "@/config/tools";
+import { CATEGORY_TINTS, ToolCategory } from "@/config/categories";
 
 export function MegaMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,7 +56,7 @@ export function MegaMenu() {
         { name: "Document Summarizer", href: "/ai/summarize" },
         { name: "Chat with PDF", href: "/ai/chat" },
         { name: "Markdown to PDF", href: "/convert/markdown-to-pdf" },
-        { name: "Diff Checker", href: "/developer/diff" },
+        { name: "Diff Checker", href: "/text/diff" },
         { name: "Word Counter", href: "/text/word-counter" },
       ],
     },
@@ -64,7 +64,7 @@ export function MegaMenu() {
       id: "converters",
       title: "Converters & Dev",
       tools: [
-        { name: "Media Downloader", href: "/download", badge: "New" },
+        { name: "PDF to JPG", href: "/pdf/to-image" },
         { name: "Invoice Generator", href: "/business/invoice" },
         { name: "Screen Recorder", href: "/misc/screen-record" },
         { name: "JSON Formatter", href: "/developer/json" },
@@ -135,7 +135,7 @@ export function MegaMenu() {
             </div>
 
             <div className="mt-6 pt-4 border-t border-[var(--line)] flex items-center justify-between text-xs text-[var(--muted)]">
-              <span>All 177+ tools run locally in browser memory without server file uploads.</span>
+              <span>All 100+ tools run locally in browser memory without server file uploads.</span>
               <Link
                 href="/tools"
                 onClick={() => setIsOpen(false)}

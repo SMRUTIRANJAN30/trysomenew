@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -20,14 +20,20 @@ export default function ToolsDirectoryPage() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Pick up ?q= and ?category= so search engines, the sitewide search box and old links can deep-link.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q");
+    const cat = params.get("category");
+    if (q) setSearchQuery(q);
+    if (cat && cat in CATEGORY_NAMES) setActiveCategory(cat);
+  }, []);
+
   const categories: { id: string; label: string }[] = [
     { id: "all", label: "All Tools" },
-    { id: "pdf", label: "PDF Tools" },
-    { id: "image", label: "Image Tools" },
-    { id: "text", label: "Text & AI" },
-    { id: "converters", label: "Converters" },
-    { id: "business", label: "Business" },
-    { id: "developer", label: "Developer" },
+    ...(Object.keys(CATEGORY_NAMES) as ToolCategory[])
+      .filter((c) => TOOLS_CONFIG.some((t) => t.category === c))
+      .map((c) => ({ id: c, label: CATEGORY_NAMES[c] })),
   ];
 
   const filteredTools = useMemo(() => {

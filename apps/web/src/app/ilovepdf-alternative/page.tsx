@@ -5,11 +5,11 @@ import { Check, X, ShieldCheck, ArrowRight, Zap, Lock } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 export const metadata: Metadata = {
-  title: "iLovePDF Alternative: 100% Client-Side Free PDF Tools | trysomenew",
+  title: "iLovePDF Alternative: 100% Client-Side Free PDF Tools",
   description:
     "An honest comparison between iLovePDF and trysomenew. Discover how in-browser WebAssembly processing protects your document privacy with zero server uploads.",
   alternates: {
-    canonical: "https://trysomenew.com/ilovepdf-alternative",
+    canonical: "/ilovepdf-alternative",
   },
 };
 

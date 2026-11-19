@@ -126,7 +126,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/tools" className="hover:text-[var(--pine)] transition-colors">
-                  All 177+ Tools Directory
+                  All 100+ Tools Directory
                 </Link>
               </li>
               <li>
