@@ -20,7 +20,7 @@ export default function QrGeneratorPage() {
   const [wifiSecurity, setWifiSecurity] = useState<typeof WIFI_SECURITY[number]>("WPA");
   const [vcName, setVcName] = useState("Smrutiranjan Sahoo");
   const [vcPhone, setVcPhone] = useState("+91 9876543210");
-  const [vcEmail, setVcEmail] = useState("smrutiranjan@trysomenew.com");
+  const [vcEmail, setVcEmail] = useState("name@example.com");
   const [vcOrg, setVcOrg] = useState("TrySomeNew");
   const [smsPhone, setSmsPhone] = useState("");
   const [smsBody, setSmsBody] = useState("");

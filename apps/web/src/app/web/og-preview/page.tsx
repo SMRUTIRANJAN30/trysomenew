@@ -9,8 +9,8 @@ export default function OgPreviewPage() {
   const [description, setDescription] = useState(
     "Fast, privacy-first all-in-one document workspace. Merge, split, rotate, compress PDFs, and verify cryptographic SHA-256 integrity."
   );
-  const [url, setUrl] = useState("https://trysomenew.com");
-  const [imageUrl, setImageUrl] = useState("https://trysomenew.com/og-image.png");
+  const [url, setUrl] = useState("https://trysomenew.netlify.app");
+  const [imageUrl, setImageUrl] = useState("https://trysomenew.netlify.app/og-image.png");
   const [copied, setCopied] = useState(false);
 
   const metaTagsCode = `<meta property="og:title" content="${title}" />

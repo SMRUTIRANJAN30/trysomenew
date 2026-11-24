@@ -8,7 +8,7 @@ export default function RobotsGeneratorPage() {
   const [userAgent, setUserAgent] = useState("*");
   const [disallows, setDisallows] = useState<string[]>(["/api/", "/admin/", "/_next/"]);
   const [newDisallow, setNewDisallow] = useState("");
-  const [sitemapUrl, setSitemapUrl] = useState("https://trysomenew.com/sitemap.xml");
+  const [sitemapUrl, setSitemapUrl] = useState("https://trysomenew.netlify.app/sitemap.xml");
   const [crawlDelay, setCrawlDelay] = useState("");
   const [copied, setCopied] = useState(false);
 

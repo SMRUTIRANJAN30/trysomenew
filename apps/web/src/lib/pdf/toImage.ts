@@ -18,16 +18,21 @@ export interface ConvertToImageOptions {
 /**
  * Dynamically loads pdfjs-dist and sets up the worker in a client-safe way.
  */
-async function getPdfJs() {
+export async function getPdfJs() {
   if (typeof window === "undefined") {
     throw new Error("PDF rendering is only supported in browser environments.");
   }
   const pdfjs = await import("pdfjs-dist");
-  // Set worker source to CDN matching installed major version
+  // The worker ships with the site, so it always matches the installed library version.
   if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs`;
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
   }
   return pdfjs;
+}
+
+/** Character maps for the exact library version in use. */
+export function pdfJsAssets(version: string) {
+  return { cMapUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${version}/cmaps/`, cMapPacked: true };
 }
 
 /**
@@ -44,8 +49,7 @@ export async function convertPdfToImages(
   // Load document
   const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(pdfBuffer),
-    cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/cmaps/",
-    cMapPacked: true,
+    ...pdfJsAssets(pdfjs.version),
   });
 
   const pdfDoc = await loadingTask.promise;

@@ -7,7 +7,7 @@ from app.routers import health, verify, files, signaling
 
 app = FastAPI(
     title=f"{settings.PROJECT_NAME} API",
-    description="Scalable, fast, privacy-first document productivity backend for trysomenew.com",
+    description="Scalable, fast, privacy-first document productivity backend for trysomenew",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",

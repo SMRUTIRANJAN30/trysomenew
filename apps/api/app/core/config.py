@@ -9,9 +9,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:8000",
-        "https://trysomenew.com",
-        "https://project.netlify.app",
-        "*",
+        "https://trysomenew.netlify.app",
     ]
     MAX_UPLOAD_SIZE_BYTES: int = 100 * 1024 * 1024  # 100 MB limit
     ENVIRONMENT: str = "development"

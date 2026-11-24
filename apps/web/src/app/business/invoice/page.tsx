@@ -15,7 +15,7 @@ interface InvoiceItem {
 export default function InvoiceGeneratorPage() {
   const [invoiceNum, setInvoiceNum] = useState("INV-2026-001");
   const [senderName, setSenderName] = useState("trysomenew Inc.");
-  const [senderEmail, setSenderEmail] = useState("billing@trysomenew.com");
+  const [senderEmail, setSenderEmail] = useState("billing@example.com");
   const [clientName, setClientName] = useState("Acme Corporation");
   const [clientEmail, setClientEmail] = useState("accounts@acme.com");
   const [currency, setCurrency] = useState("$");

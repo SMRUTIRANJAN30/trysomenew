@@ -3,7 +3,8 @@
 import { useState, useRef } from "react";
 import ToolShell from "@/components/tools/ToolShell";
 import { Upload, Download, EyeOff, ShieldCheck, Plus, Trash2, Check } from "lucide-react";
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
+import { redactPdf } from "@/lib/pdf/redact";
 
 interface RedactBox {
   id: string;
@@ -22,6 +23,8 @@ export default function PdfRedactPage() {
   ]);
   const [isRedacting, setIsRedacting] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,6 +32,7 @@ export default function PdfRedactPage() {
     if (!f) return;
     setFile(f);
     setResultUrl(null);
+    setError(null);
     try {
       const bytes = await f.arrayBuffer();
       const pdf = await PDFDocument.load(bytes);
@@ -47,14 +51,17 @@ export default function PdfRedactPage() {
       width: 200,
       height: 20,
     };
+    setResultUrl(null);
     setBoxes([...boxes, newBox]);
   };
 
   const removeBox = (id: string) => {
+    setResultUrl(null);
     setBoxes(boxes.filter((b) => b.id !== id));
   };
 
   const updateBox = (id: string, updates: Partial<RedactBox>) => {
+    setResultUrl(null);
     setBoxes(boxes.map((b) => (b.id === id ? { ...b, ...updates } : b)));
   };
 
@@ -62,28 +69,13 @@ export default function PdfRedactPage() {
     if (!file) return;
     setIsRedacting(true);
     setResultUrl(null);
+    setError(null);
     try {
-      const bytes = await file.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(bytes);
-      const pages = pdfDoc.getPages();
-
-      for (const box of boxes) {
-        const targetPageIdx = Math.max(0, Math.min(box.page - 1, pages.length - 1));
-        const page = pages[targetPageIdx];
-        page.drawRectangle({
-          x: box.x,
-          y: box.y,
-          width: box.width,
-          height: box.height,
-          color: rgb(0, 0, 0),
-        });
-      }
-
-      const out = await pdfDoc.save();
-      const blob = new Blob([out.buffer as ArrayBuffer], { type: "application/pdf" });
-      setResultUrl(URL.createObjectURL(blob));
+      const out = await redactPdf(await file.arrayBuffer(), boxes, (n, total) => setProgress(`Page ${n} of ${total}`));
+      setResultUrl(URL.createObjectURL(new Blob([out.buffer as ArrayBuffer], { type: "application/pdf" })));
     } catch (err) {
       console.error(err);
+      setError(err instanceof Error ? err.message : "This PDF could not be redacted.");
     } finally {
       setIsRedacting(false);
     }
@@ -99,8 +91,8 @@ export default function PdfRedactPage() {
 
   return (
     <ToolShell
-      title="PDF Permanent Redaction (Phase 3)"
-      description="Permanently black out sensitive names, numbers, or addresses from PDF documents before sharing. Zero data leakage."
+      title="PDF Redaction"
+      description="Black out names, numbers or addresses in a PDF. Pages become images, so the covered text is removed from the new file. Check the result before sharing it."
     >
       <div className="space-y-6">
         {/* Upload Zone */}
@@ -123,7 +115,7 @@ export default function PdfRedactPage() {
               {file ? file.name : "Click or drop a PDF to redact sensitive sections"}
             </p>
             <p className="text-xs text-[var(--muted-text)] mt-1">
-              {file ? `Detected ${pageCount} pages. Ready to redact.` : "100% Client-Side. Overlays solid black vector boxes."}
+              {file ? `Detected ${pageCount} pages. Ready to redact.` : "Processed in your browser. Your file is not uploaded."}
             </p>
           </div>
         </div>
@@ -133,7 +125,7 @@ export default function PdfRedactPage() {
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
               <div>
                 <h4 className="text-sm font-bold text-[var(--foreground)]">Redaction Coordinates</h4>
-                <p className="text-xs text-[var(--muted)]">Specify bounding boxes to permanently obscure.</p>
+                <p className="text-xs text-[var(--muted)]">Set the areas to black out, in points from the bottom left.</p>
               </div>
               <button onClick={addBox} className="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5">
                 <Plus size={13} /> Add Redaction Box
@@ -204,7 +196,7 @@ export default function PdfRedactPage() {
 
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span className="text-xs text-emerald-500 flex items-center gap-1.5 font-medium">
-                <ShieldCheck size={14} /> True bitwise black-out applied to underlying streams
+                <ShieldCheck size={14} /> Text in the new PDF can no longer be selected or searched
               </span>
               <button
                 onClick={applyRedaction}
@@ -212,9 +204,11 @@ export default function PdfRedactPage() {
                 className="btn-primary flex items-center gap-2 py-2.5 px-6 text-xs w-full sm:w-auto justify-center"
               >
                 <EyeOff size={14} />
-                {isRedacting ? "Applying Redaction..." : "Permanently Redact PDF"}
+                {isRedacting ? `Redacting ${progress}` : "Permanently Redact PDF"}
               </button>
             </div>
+
+            {error && <p role="alert" className="text-xs font-semibold text-red-500">{error}</p>}
 
             {resultUrl && (
               <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between animate-in fade-in">
